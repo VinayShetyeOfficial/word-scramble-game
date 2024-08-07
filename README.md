@@ -1,4 +1,4 @@
-# Word Scramble (Development In Progress...)
+# Word Scramble (👨‍💻 Development In Progress...)
 
 ![Game_Home](https://github.com/user-attachments/assets/2032315b-f3c1-4869-8721-bd25c826064a)
 
