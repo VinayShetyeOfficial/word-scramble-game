@@ -1,7 +1,7 @@
 # Word Scramble (👨‍💻 Development In Progress...)
 
 ![Game_Home](https://github.com/user-attachments/assets/2032315b-f3c1-4869-8721-bd25c826064a)    
-
+ 
 ![image](https://github.com/user-attachments/assets/a241ccf7-ab4f-4110-a7c0-3509dc24c845)
 
 ![image](https://github.com/user-attachments/assets/42cbfcf9-e889-4a15-85b8-44ebfc067d5d)
