@@ -5,19 +5,31 @@ const NameEntryPageWrapper = styled.div`
     box-shadow: rgba(0, 0, 0, 0.4) 0px 3px 6px,
       rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
       rgba(0, 0, 0, 0.2) 0px -4px 0px inset;
+    transition: all 0.3s ease;
+    margin-inline: auto;
+  }
+
+  .name_field:focus {
+    box-shadow: rgba(0, 0, 0, 0.5) 0px 5px 8px,
+      rgba(0, 0, 0, 0.4) 0px 9px 15px -3px,
+      rgba(0, 0, 0, 0.3) 0px -4px 0px inset;
+    transform: translateY(-2px);
   }
 
   .name_field::-webkit-input-placeholder {
     text-shadow: none;
+    opacity: 0.7;
   }
 
   .btn_start_game {
     transition: transform 1s ease-in-out;
     transition-delay: 0.8s;
+    display: block;
+    margin-inline: auto;
   }
 
   .btn_start_game.scale-15 {
-    transform: scale(20);
+    transform: scale(15);
   }
 
   .btn_start_game-text {
@@ -28,51 +40,36 @@ const NameEntryPageWrapper = styled.div`
     opacity: 0;
   }
 
-  @media (max-width: 875px) {
-    .container {
-      padding: 20px;
-    }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeIn 0.5s ease-in;
+  }
 
-    .label_name {
-      font-size: 4rem;
-      margin-bottom: 0;
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
     }
-
-    .name_field,
-    .btn_start_game {
-      font-size: 1.8rem;
-    }
-
-    .name_field {
-      padding: 0.75rem;
-      margin: 1.5625rem 0;
-    }
-
-    .btn_start_game {
-      display: block;
-      margin-inline: auto;
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 
-  @media (max-width: 420px) {
-    .label_name {
-      font-size: 3.5rem;
-      margin-bottom: 0;
+  @media (max-width: 480px) {
+    .container {
+      width: 95%;
     }
+  }
 
-    .name_field,
-    .btn_start_game {
-      font-size: 1.6rem;
+  @media (max-width: 320px) {
+    .label_name {
+      font-size: 2rem;
     }
 
     .name_field {
-      display: block;
       width: 100%;
-    }
-
-    .btn_start_game {
-      display: block;
-      margin: auto;
     }
   }
 `;
