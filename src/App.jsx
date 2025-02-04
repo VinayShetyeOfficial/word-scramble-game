@@ -1,7 +1,6 @@
-// src/App.jsx
-
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import RouteGuard from "./components/RouteGuard/RouteGuard";
 import HomeScreen from "./components/HomeScreen/HomeScreen";
 import NameEntryPage from "./pages/NameEntryPage";
 import LoadingScreen from "./pages/LoadingScreen";
@@ -16,14 +15,19 @@ function App() {
     <GameProvider>
       <MusicProvider>
         <Router>
-          <Routes>
-            <Route path="/" element={<HomeScreen />} />
-            <Route path="/enter-name" element={<NameEntryPage />} />
-            <Route path="/load" element={<LoadingScreen />} />
-            <Route path="/playScreen" element={<PlayScreen />} />
-            <Route path="/instructions" element={<Instructions />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-          </Routes>
+          <RouteGuard>
+            <Routes>
+              <Route path="/" element={<HomeScreen />} />
+              <Route path="/enter-name" element={<NameEntryPage />} />
+              <Route path="/load" element={<LoadingScreen />} />
+              <Route path="/playScreen" element={<PlayScreen />} />
+              <Route path="/instructions" element={<Instructions />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
+            </Routes>
+            {/* <Routes>
+              <Route path="/" element={<LoadingScreen />} />
+            </Routes> */}
+          </RouteGuard>
         </Router>
       </MusicProvider>
     </GameProvider>
