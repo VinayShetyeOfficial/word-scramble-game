@@ -10,7 +10,6 @@ body {
   background-repeat: no-repeat; */
   background: rgb(198, 9, 255);
   overflow: hidden;
-  min-width: 340px;
 }
 
 ::-moz-selection {
