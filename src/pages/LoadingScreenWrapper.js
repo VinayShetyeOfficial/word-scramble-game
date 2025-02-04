@@ -1,6 +1,23 @@
 import styled from "styled-components";
 
 const LoadingScreenWrapper = styled.div`
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   @keyframes dotBlink {
     0%,
     100% {
@@ -13,8 +30,6 @@ const LoadingScreenWrapper = styled.div`
 
   .dot {
     display: inline-block;
-    width: 8px;
-    height: 8px;
     background-color: white;
     border-radius: 50%;
     margin: 0 0.3rem;
@@ -32,6 +47,18 @@ const LoadingScreenWrapper = styled.div`
 
   .dot:nth-child(3) {
     animation-delay: 1s;
+  }
+
+  @media (max-width: 480px) {
+    .container {
+      width: 95%;
+    }
+  }
+
+  @media (max-width: 380px) {
+    // .label_welcome {
+    //   font-size: 8vw;
+    // }
   }
 `;
 
