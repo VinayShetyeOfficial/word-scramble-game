@@ -84,7 +84,7 @@ const NameEntryPageWrapper = styled.div`
     }
     20%,
     60% {
-      color: #dc2626; // Red color
+      color: #e03c3c; // Red color
     }
     40%,
     80% {

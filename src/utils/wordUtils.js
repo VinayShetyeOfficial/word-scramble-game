@@ -1,98 +1,23 @@
-export const predefinedWords = {
-  4: [
-    "game",
-    "play",
-    "word",
-    "text",
-    "code",
-    "book",
-    "tree",
-    "fish",
-    "love",
-    "home",
-  ],
-  5: [
-    "apple",
-    "table",
-    "chair",
-    "earth",
-    "water",
-    "house",
-    "mouse",
-    "green",
-    "smile",
-    "dream",
-  ],
-  6: [
-    "banana",
-    "circle",
-    "orange",
-    "planet",
-    "rocket",
-    "school",
-    "animal",
-    "garden",
-    "window",
-    "friend",
-  ],
-  7: [
-    "picture",
-    "morning",
-    "evening",
-    "program",
-    "holiday",
-    "village",
-    "journey",
-    "network",
-    "weather",
-    "history",
-  ],
-  8: [
-    "elephant",
-    "building",
-    "computer",
-    "football",
-    "language",
-    "mountain",
-    "industry",
-    "sentence",
-    "question",
-    "children",
-  ],
-  9: [
-    "adventure",
-    "beautiful",
-    "dangerous",
-    "equipment",
-    "invisible",
-    "knowledge",
-    "literature",
-    "mechanism",
-    "operation",
-    "photograph",
-  ],
-  10: [
-    "apartment",
-    "dictionary",
-    "electricity",
-    "friendship",
-    "generation",
-    "helicopter",
-    "instrument",
-    "landscapes",
-    "meditation",
-    "occupation",
-  ],
+import { wordList, getWordsByLength } from "../data/words";
+
+export const getWordForRound = (round, userWords = {}, gameWords = {}) => {
+  // Determine word length based on round (4 letters for rounds 1-5, 5 letters for 6-10, etc.)
+  const wordLength = Math.floor((round - 1) / 5) + 4;
+
+  // Get words of current length
+  const availableWords = getWordsByLength(wordLength);
+
+  // Get a random word from available words
+  const randomIndex = Math.floor(Math.random() * availableWords.length);
+  return availableWords[randomIndex];
 };
 
 export const categorizeWords = (words) => {
-  return words.reduce((categories, word) => {
+  return words.reduce((acc, word) => {
     const length = word.length;
-    if (!categories[length]) {
-      categories[length] = [];
-    }
-    categories[length].push(word);
-    return categories;
+    if (!acc[length]) acc[length] = [];
+    acc[length].push(word);
+    return acc;
   }, {});
 };
 
@@ -126,23 +51,4 @@ const getUniqueWord = (words, length) => {
   usedWordsMap[length].add(word);
 
   return word;
-};
-
-export const getWordForRound = (round, userWords, gameWords) => {
-  const wordLength = 4 + Math.floor((round - 1) / 5);
-  let availableWords = (userWords[wordLength] || []).concat(
-    gameWords[wordLength] || []
-  );
-
-  let word = getUniqueWord(availableWords, wordLength);
-
-  if (!word) {
-    // Fallback to predefined words if no user words available
-    word = getUniqueWord(predefinedWords[wordLength], wordLength);
-    if (!word) {
-      throw new Error(`No words available for length ${wordLength}`);
-    }
-  }
-
-  return { word, scrambled: scrambleWord(word) };
 };
