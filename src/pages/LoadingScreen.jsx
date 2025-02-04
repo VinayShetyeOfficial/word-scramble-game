@@ -17,7 +17,7 @@ const LoadingScreen = () => {
 
   return (
     <LoadingScreenWrapper className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-400 via-blue-600 to-blue-800">
-      <div className="container p-4 text-center sm:p-6 md:p-8 lg:p-10">
+      <div className="container p-4 text-center select-none sm:p-6 md:p-8 lg:p-10">
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-3 sm:mb-4 md:mb-5 lg:mb-8 tracking-widest drop-shadow-[3px_3px_0px_var(--tw-shadow-color)] shadow-blue-800">
           <span className="block sm:inline">Welcome</span>
           <span className="block sm:inline sm:ml-3">{playerName}!</span>

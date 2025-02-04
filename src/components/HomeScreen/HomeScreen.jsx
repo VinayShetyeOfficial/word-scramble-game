@@ -11,6 +11,7 @@ const HomeScreen = () => {
   const { playHoverSound, playClickSound } = useSoundEffects();
   const { startMusic } = useMusic();
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [playerName, setPlayerName] = useState("");
 
   const handlePlayClick = () => {
     if (!hasInteracted) {
@@ -24,6 +25,24 @@ const HomeScreen = () => {
     setTimeout(() => {
       navigate("/enter-name");
     }, 1200);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (playerName.trim().length <= 1) {
+      // Don't proceed if name is 1 character or less
+      return;
+    }
+
+    const playButton = document.querySelector(".play");
+    const playText = document.querySelector(".play-text");
+
+    playButton.classList.add("scale-15");
+    playText.classList.add("opacity-0");
+
+    setTimeout(() => {
+      navigate("/loadingScreen", { state: { playerName: playerName.trim() } });
+    }, 1000);
   };
 
   return (

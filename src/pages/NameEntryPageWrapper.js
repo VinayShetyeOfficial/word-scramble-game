@@ -72,6 +72,38 @@ const NameEntryPageWrapper = styled.div`
       width: 100%;
     }
   }
+
+  .name_field.invalid {
+    animation: invalidShake 1s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+
+  @keyframes invalidShake {
+    0%,
+    100% {
+      color: #0d9488; // Original teal-600 color
+    }
+    20%,
+    60% {
+      color: #dc2626; // Red color
+    }
+    40%,
+    80% {
+      color: #0d9488; // Original teal-600 color
+    }
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+      transform: translateX(-1px);
+    }
+    20%,
+    40%,
+    60%,
+    80% {
+      transform: translateX(1px);
+    }
+  }
 `;
 
 export default NameEntryPageWrapper;

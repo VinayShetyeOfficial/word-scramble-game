@@ -6,16 +6,28 @@ import useSoundEffects from "../hooks/useSoundEffects"; // Import sound effects 
 const NameEntryPage = () => {
   const [animate, setAnimate] = useState(false);
   const [name, setName] = useState("");
+  const [isInvalid, setIsInvalid] = useState(false);
   const navigate = useNavigate();
   const { playHoverSound, playClickSound } = useSoundEffects(); // Destructure the sound functions
 
   const handleStartGame = () => {
-    if (name.trim() !== "") {
+    if (name.trim() !== "" && name.trim().length >= 4) {
       playClickSound(); // Play click sound
       setAnimate(true);
       setTimeout(() => {
         navigate("/load", { state: { playerName: name } });
       }, 1100);
+    } else {
+      setIsInvalid(true);
+      setTimeout(() => {
+        setIsInvalid(false);
+      }, 1000);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleStartGame();
     }
   };
 
@@ -29,12 +41,14 @@ const NameEntryPage = () => {
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          onKeyPress={handleKeyPress}
           placeholder="Your Name"
-          className="name_field text-xl sm:text-2xl md:text-3xl  
+          className={`name_field text-xl sm:text-2xl md:text-3xl  
              w-[240px] sm:w-[320px] md:w-[380px] lg:w-[450px] 
              my-4 sm:my-6 md:my-8 text-teal-600 
              p-3 sm:p-4 tracking-wider rounded-lg 
-             shadow-md focus:outline-none"
+             shadow-md focus:outline-none
+             ${isInvalid ? "invalid" : ""}`}
         />
 
         <button
