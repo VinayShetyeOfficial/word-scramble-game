@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NameEntryPageWrapper from "./NameEntryPageWrapper";
 import useSoundEffects from "../hooks/useSoundEffects"; // Import sound effects hook
+import { inappropriateWords } from "../utils/inappropriateWords";
 
 const NameEntryPage = () => {
   const [animate, setAnimate] = useState(false);
@@ -9,16 +10,6 @@ const NameEntryPage = () => {
   const [isInvalid, setIsInvalid] = useState(false);
   const navigate = useNavigate();
   const { playHoverSound, playClickSound } = useSoundEffects(); // Destructure the sound functions
-
-  // List of common inappropriate words to filter
-  const inappropriateWords = [
-    "admin",
-    "mod",
-    "moderator",
-    "fuck",
-    "shit",
-    "ass",
-  ];
 
   const isValidGameName = (name) => {
     // Remove leading/trailing spaces
