@@ -188,6 +188,36 @@ const PlayScreenWrapper = styled.div`
         font-size: 16px;
       }
     }
+
+    @media (max-width: 320px) {
+      .playscreen_main {
+        padding: 0.7rem;
+      }
+
+      .play_box_heading,
+      .word_box {
+        margin-bottom: 15px !important;
+      }
+
+      .word_box_container {
+        padding: 1rem;
+      }
+
+      .modal_box {
+        padding: 15px 20px !important;
+      }
+
+      .help_modal {
+      }
+
+      .help_modal_heading {
+        font-size: 20px !important;
+      }
+
+      .modal_items {
+        padding-bottom: 20px !important;
+      }
+    }
   }
 `;
 
