@@ -10,9 +10,49 @@ const NameEntryPage = () => {
   const navigate = useNavigate();
   const { playHoverSound, playClickSound } = useSoundEffects(); // Destructure the sound functions
 
+  // List of common inappropriate words to filter
+  const inappropriateWords = [
+    "admin",
+    "mod",
+    "moderator",
+    "fuck",
+    "shit",
+    "ass",
+  ];
+
+  const isValidGameName = (name) => {
+    // Remove leading/trailing spaces
+    const trimmedName = name.trim();
+
+    // Check length (4-15 characters)
+    if (trimmedName.length < 4 || trimmedName.length > 15) {
+      return false;
+    }
+
+    // Check if contains only alphanumeric and underscore
+    // This regex allows letters, numbers, and underscores
+    const validCharacters = /^[a-zA-Z0-9_]+$/;
+    if (!validCharacters.test(trimmedName)) {
+      return false;
+    }
+
+    // Check for inappropriate words
+    const lowercaseName = trimmedName.toLowerCase();
+    if (inappropriateWords.some((word) => lowercaseName.includes(word))) {
+      return false;
+    }
+
+    // Check if name starts with a number
+    if (/^[0-9]/.test(trimmedName)) {
+      return false;
+    }
+
+    return true;
+  };
+
   const handleStartGame = () => {
-    if (name.trim() !== "" && name.trim().length >= 4) {
-      playClickSound(); // Play click sound
+    if (isValidGameName(name)) {
+      playClickSound();
       setAnimate(true);
       setTimeout(() => {
         navigate("/load", { state: { playerName: name } });
@@ -31,6 +71,15 @@ const NameEntryPage = () => {
     }
   };
 
+  // Prevent invalid characters while typing
+  const handleNameChange = (e) => {
+    const value = e.target.value;
+    // Only allow letters, numbers, and underscores
+    if (value === "" || /^[a-zA-Z0-9_]*$/.test(value)) {
+      setName(value);
+    }
+  };
+
   return (
     <NameEntryPageWrapper className="flex justify-center items-center min-h-screen bg-gradient-to-br from-green-400 via-green-600 to-green-800">
       <div className="container p-2 text-center sm:p-2 md:p-8 lg:p-10">
@@ -40,14 +89,16 @@ const NameEntryPage = () => {
         <input
           type="text"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={handleNameChange}
           onKeyPress={handleKeyPress}
-          placeholder="Your Name"
+          placeholder="Eg. Joe123"
+          maxLength={15}
           className={`name_field text-xl sm:text-2xl md:text-3xl  
              w-[240px] sm:w-[320px] md:w-[380px] lg:w-[450px] 
              my-4 sm:my-6 md:my-8 text-teal-600 
              p-3 sm:p-4 tracking-wider rounded-lg 
              shadow-md focus:outline-none
+             placeholder:text-md placeholder:md:text-xl placeholder:lg:text-2xl
              ${isInvalid ? "invalid" : ""}`}
         />
 
