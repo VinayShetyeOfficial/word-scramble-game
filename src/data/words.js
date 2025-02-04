@@ -45,16 +45,16 @@ export const wordList = {
     { original: "COFFEE", scrambled: "EEFCOF" },
   ]),
   7: shuffleArray([
-    { original: "ELEPHANT", scrambled: "LEPTHENA" },
-    { original: "JOURNEY", scrambled: "OJRUNYE" },
-    { original: "LIBRARY", scrambled: "BIRALRY" },
-    { original: "MOUNTAIN", scrambled: "NMTUANOI" },
-    { original: "FANTASY", scrambled: "YFATSNA" },
-    { original: "SPINACH", scrambled: "INPSAHC" },
     { original: "DOLPHIN", scrambled: "LPHODIN" },
+    { original: "HARMONY", scrambled: "MONYHAR" },
     { original: "RAINBOW", scrambled: "WRANIBO" },
     { original: "DIAMOND", scrambled: "MONDDIA" },
-    { original: "HARMONY", scrambled: "MONYHAR" },
+    { original: "FANTASY", scrambled: "YFATSNA" },
+    { original: "JOURNEY", scrambled: "OJRUNYE" },
+    { original: "LIBRARY", scrambled: "BIRALRY" },
+    { original: "SPINACH", scrambled: "INPSAHC" },
+    { original: "MORNING", scrambled: "GNIRNMO" },
+    { original: "WEATHER", scrambled: "HTREAEW" },
   ]),
   8: shuffleArray([
     { original: "ELEPHANT", scrambled: "PHEANTLS" },
@@ -62,23 +62,23 @@ export const wordList = {
     { original: "SUNSHINE", scrambled: "SSEHNUNI" },
     { original: "AIRPLANE", scrambled: "RAELIPAN" },
     { original: "COMPUTER", scrambled: "MTCOPREU" },
-    { original: "BUTTERFLY", scrambled: "UTTERBFLY" },
     { original: "DARKNESS", scrambled: "ARKNESSD" },
     { original: "PAINTING", scrambled: "AINTINGP" },
     { original: "BIRTHDAY", scrambled: "IRTHDAYB" },
     { original: "TREASURE", scrambled: "REASURTE" },
+    { original: "BUTTERFLY", scrambled: "UTTERFLYB" },
   ]),
   9: shuffleArray([
-    { original: "EXPERIENCE", scrambled: "CNEEIPXER" },
-    { original: "DEVELOPER", scrambled: "RDEVEOLP" },
-    { original: "WATERFALL", scrambled: "AWTERFAL" },
-    { original: "NEVERMIND", scrambled: "VNEMRIND" },
+    { original: "BEAUTIFUL", scrambled: "FULBEAUTI" },
+    { original: "DISCOVERY", scrambled: "COVERYIDS" },
+    { original: "EDUCATION", scrambled: "DUCATIONE" },
+    { original: "NEVERMIND", scrambled: "VERMINDNE" },
+    { original: "CHALLENGE", scrambled: "LENGECHAL" },
+    { original: "WATERFALL", scrambled: "TERFALLWA" },
+    { original: "DEVELOPER", scrambled: "VELOPERDE" },
     { original: "CHOCOLATE", scrambled: "HOCOLATEC" },
     { original: "ADVENTURE", scrambled: "DVENTUREA" },
-    { original: "BEAUTIFUL", scrambled: "EAUTIFULB" },
-    { original: "CHALLENGE", scrambled: "HALLENGEC" },
-    { original: "DISCOVERY", scrambled: "ISCOVERYD" },
-    { original: "EDUCATION", scrambled: "DUCATIONE" },
+    { original: "KNOWLEDGE", scrambled: "WLEDGEKON" },
   ]),
   10: shuffleArray([
     { original: "ARCHITECTURE", scrambled: "ATRIERCTUEC" },
@@ -93,7 +93,13 @@ export const wordList = {
   ]),
 };
 
-// Helper function to get words by length
+// Add word length validation
+export const validateWordLength = (word, expectedLength) => {
+  return word.length === expectedLength;
+};
+
+// Helper function to get words by length with validation
 export const getWordsByLength = (length) => {
-  return wordList[length] || [];
+  const words = wordList[length] || [];
+  return words.filter((word) => validateWordLength(word.original, length));
 };

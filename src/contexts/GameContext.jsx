@@ -48,12 +48,20 @@ export const GameProvider = ({ children }) => {
 
     // Filter remaining words to only show current category length
     const remainingWords = allWords
-      .map((word) => (typeof word === "string" ? word : word?.original || word))
-      .filter((word) => word.length === currentWordLength.current)
-      .filter((word) => !categoriesUsed[currentCategory]?.includes(word));
+      .filter((word) => {
+        const wordString =
+          typeof word === "string" ? word : word?.original || word;
+        return (
+          !usedWordsArray.includes(word) && !usedWordsArray.includes(wordString)
+        );
+      })
+      .map((word) =>
+        typeof word === "string" ? word : word?.original || word
+      );
 
-    // Format debug info
-    const debugInfo = `
+    // Only show debug info if we have at least one correct answer
+    if (usedWordsArray.length > 0) {
+      const debugInfo = `
 ========================================
 Category ${currentCategory} [${currentWordLength.current}-Letter Words]
 ========================================
@@ -62,7 +70,6 @@ Total Words in Category: ${allWords.length}
 Used Words by Category:
 -----------------------
 ${Object.entries(categoriesUsed)
-  .sort(([a], [b]) => Number(a) - Number(b))
   .map(([cat, words]) => `Category ${cat} => [${words.join(", ")}]`)
   .join("\n")}
 
@@ -73,15 +80,15 @@ Remaining Words in Current Category:
 Progress:
 ---------
 Words Completed: ${categoriesUsed[currentCategory]?.length || 0}/${
-      allWords.length
-    }
+        allWords.length
+      }
 ========================================`;
 
-    console.log(debugInfo);
+      console.log(debugInfo);
+    }
 
     if (remainingWords.length === 0) {
       currentWordLength.current += 1;
-      // Don't clear used words when moving to next category
       setRound((prev) => prev + 1);
 
       const newLengthWords = getWordsByLength(currentWordLength.current);
