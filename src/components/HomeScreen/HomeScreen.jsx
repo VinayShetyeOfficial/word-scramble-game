@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HomeScreenWrapper from "./HomeScreenWrapper";
 import useSoundEffects from "../../hooks/useSoundEffects";
@@ -10,49 +10,54 @@ const HomeScreen = () => {
   const navigate = useNavigate();
   const { playHoverSound, playClickSound } = useSoundEffects();
   const { startMusic } = useMusic();
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   const handlePlayClick = () => {
+    if (!hasInteracted) {
+      setHasInteracted(true);
+      setTimeout(() => {
+        startMusic();
+      }, 1300);
+    }
     playClickSound();
     setAnimate(true);
     setTimeout(() => {
       navigate("/enter-name");
-      startMusic(); // Start the background music
     }, 1200);
   };
 
   return (
-    <HomeScreenWrapper className="min-h-screen select-none flex justify-center items-center">
-      <div className="wrapper p-10 text-center">
-        <div className="title animate__animated animate__zoomInDown text-[120px] uppercase tracking-wider text-white drop-shadow-[4px_3px_0px_var(--tw-shadow-color)] shadow-blue-900">
+    <HomeScreenWrapper className="flex justify-center items-center min-h-screen select-none">
+      <div className="p-4 text-center md:p-6 lg:p-10 wrapper">
+        <div className="title animate__animated animate__zoomInDown text-5xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[120px] uppercase tracking-wider text-white drop-shadow-[4px_3px_0px_var(--tw-shadow-color)] shadow-blue-900">
           Scramble
         </div>
-        <div className="letters font-sans text-7xl space-x-5 font-semibold mt-4">
-          <span className="letter bg-gradient-to-b from-yellow-300 to-orange-500 text-violet-900 w-[6rem] pt-2 pb-3 font-bold rounded-xl border-b-[5px] border-orange-700 inline-block">
+        <div className="mt-8 space-x-2 font-sans text-3xl font-semibold sm:mt-4 md:mt-10 sm:space-x-3 md:space-x-4 lg:space-x-5 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl letters">
+          <span className="letter bg-gradient-to-b from-yellow-300 to-orange-500 text-violet-900 w-[2.5rem] sm:w-[3rem] md:w-[4rem] lg:w-[5rem] xl:w-[6rem] pt-1 sm:pt-1.5 md:pt-2 pb-2 sm:pb-2.5 md:pb-3 font-bold rounded-xl border-b-[5px] border-orange-700 inline-block">
             W
           </span>
-          <span className="letter bg-gradient-to-b from-yellow-300 to-orange-500 text-violet-900 w-[6rem] pt-2 pb-3 font-bold rounded-xl border-b-[5px] border-orange-700 inline-block">
+          <span className="letter bg-gradient-to-b from-yellow-300 to-orange-500 text-violet-900 w-[2.5rem] sm:w-[3rem] md:w-[4rem] lg:w-[5rem] xl:w-[6rem] pt-1 sm:pt-1.5 md:pt-2 pb-2 sm:pb-2.5 md:pb-3 font-bold rounded-xl border-b-[5px] border-orange-700 inline-block">
             O
           </span>
-          <span className="letter bg-gradient-to-b from-yellow-300 to-orange-500 text-violet-900 w-[6rem] pt-2 pb-3 font-bold rounded-xl border-b-[5px] border-orange-700 inline-block">
+          <span className="letter bg-gradient-to-b from-yellow-300 to-orange-500 text-violet-900 w-[2.5rem] sm:w-[3rem] md:w-[4rem] lg:w-[5rem] xl:w-[6rem] pt-1 sm:pt-1.5 md:pt-2 pb-2 sm:pb-2.5 md:pb-3 font-bold rounded-xl border-b-[5px] border-orange-700 inline-block">
             R
           </span>
-          <span className="letter bg-gradient-to-b from-yellow-300 to-orange-500 text-violet-900 w-[6rem] pt-2 pb-3 font-bold rounded-xl border-b-[5px] border-orange-700 inline-block">
+          <span className="letter bg-gradient-to-b from-yellow-300 to-orange-500 text-violet-900 w-[2.5rem] sm:w-[3rem] md:w-[4rem] lg:w-[5rem] xl:w-[6rem] pt-1 sm:pt-1.5 md:pt-2 pb-2 sm:pb-2.5 md:pb-3 font-bold rounded-xl border-b-[5px] border-orange-700 inline-block">
             D
           </span>
-          <span className="letter bg-gradient-to-b from-yellow-300 to-orange-500 text-violet-900 w-[6rem] pt-2 pb-3 font-bold rounded-xl border-b-[5px] border-orange-700 inline-block">
+          <span className="letter bg-gradient-to-b from-yellow-300 to-orange-500 text-violet-900 w-[2.5rem] sm:w-[3rem] md:w-[4rem] lg:w-[5rem] xl:w-[6rem] pt-1 sm:pt-1.5 md:pt-2 pb-2 sm:pb-2.5 md:pb-3 font-bold rounded-xl border-b-[5px] border-orange-700 inline-block">
             S
           </span>
         </div>
         <button
-          className="play mt-14 bg-green-800 text-5xl mx-auto text-white rounded-full shadow-lg transform transition-transform duration-1000"
-          onClick={() => {
-            playClickSound();
-            handlePlayClick();
-          }}
+          className={`play mt-6 sm:mt-8 md:mt-10 lg:mt-14 bg-green-800 text-2xl sm:text-3xl md:text-4xl lg:text-5xl mx-auto text-white rounded-full shadow-lg transform transition-transform duration-1000 ${
+            animate ? "scale-15" : ""
+          }`}
+          onClick={handlePlayClick}
           onMouseEnter={playHoverSound}
         >
           <span
-            className={`play-text bg-gradient-to-tl hover:bg-gradient-to-br  from-green-400 via-green-500 to-green-600 w-full block px-20 py-5 rounded-full -translate-y-1 active:-translate-y-0 transition-opacity duration-1000 ${
+            className={`play-text bg-gradient-to-tl hover:bg-gradient-to-br from-green-400 via-green-500 to-green-600 w-full block px-8 sm:px-10 md:px-12 lg:px-14 py-3 sm:py-4 md:py-4 lg:py-5 rounded-full -translate-y-1 active:-translate-y-0 transition-opacity duration-1000 ${
               animate ? "opacity-0" : "opacity-100"
             }`}
           >
