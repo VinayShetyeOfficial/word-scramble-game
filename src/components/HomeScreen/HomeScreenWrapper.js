@@ -108,89 +108,24 @@ const HomeScreenWrapper = styled.div`
     opacity: 0;
   }
 
-  @media (max-width: 1920px) {
-    transform: perspective(750px) translate3d(0, 0, -250px) rotateX(27deg)
-      scale(0.9);
-    &:hover {
-      transform: perspective(750px) translate3d(0, 0, 0) rotateX(0deg) scale(1);
-    }
-  }
-
   @media (max-width: 1280px) {
-    transform: perspective(750px) translate3d(0, 0, -250px) rotateX(38deg)
-      scale(0.8);
-    &:hover {
-      transform: perspective(750px) translate3d(0, 0, 0) rotateX(0deg) scale(1);
-    }
-  }
-
-  @media (max-width: 1024px) {
-    transform: perspective(750px) translate3d(0, 0, -250px) rotateX(32deg)
-      scaleY(0.7);
-    &:hover {
-      transform: perspective(750px) translate3d(0, 0, 0) rotateX(0deg) scale(1);
-    }
-  }
-
-  @media (max-width: 830px) {
-    transform: perspective(750px) translate3d(0, 0, 0) rotateX(20deg)
-      scale(0.7, 0.4);
-    .title {
-      font-size: 100px;
-    }
-
-    .letters {
-      font-size: 60px;
-    }
-
-    .letters .letter {
-      transform: scale(1);
-    }
-
-    &:hover {
-      transform: perspective(750px) translate3d(0, 0, 0) rotateX(0deg) scale(1);
-    }
+    transform: perspective(750px) translate3d(0, 0, -200px) rotateX(25deg);
   }
 
   @media (max-width: 768px) {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    align-items: center;
-    height: 100vh;
-    width: 100%;
     transform: perspective(750px) translate3d(0, 0, 0) rotateX(0deg) scale(1);
     &:hover {
       transform: perspective(750px) translate3d(0, 0, 0) rotateX(0deg) scale(1);
     }
-    .letters span {
-      width: 70px;
-      font-size: 35px;
-      padding: 10px;
-    }
-    .title {
-      font-size: 80px;
-      text-align: center;
-    }
-    button.play {
-      transform: scale(0.7);
-    }
+    border-width: 8px;
   }
 
-  @media (max-width: 550px) {
-    .wrapper {
-      transform: scale(0.7);
-    }
+  @media (max-width: 640px) {
+    border-width: 6px;
   }
 
-  @media (max-width: 360px) {
-    .title {
-      font-size: 80px;
-    }
-
-    .wrapper {
-      transform: scale(0.6);
-    }
+  @media (max-width: 480px) {
+    border-width: 4px;
   }
 `;
 
