@@ -1,5 +1,3 @@
-// src/contexts/GameContext.jsx
-
 import React, {
   createContext,
   useContext,
@@ -7,7 +5,7 @@ import React, {
   useEffect,
   useRef,
 } from "react";
-import { getWordsByLength } from "../data/words";
+import { getWordsByLength, wordList } from "../data/words";
 
 const GameContext = createContext();
 
@@ -20,6 +18,11 @@ export const GameProvider = ({ children }) => {
   const [userWords, setUserWords] = useState({});
   const [usedWords, setUsedWords] = useState(new Set());
   const currentWordLength = useRef(4);
+
+  // Dynamically generate valid word lengths from wordList
+  const validWordLengths = Object.keys(wordList)
+    .map(Number)
+    .sort((a, b) => a - b);
 
   const getNextWord = () => {
     const availableWords = getWordsByLength(currentWordLength.current);
@@ -35,7 +38,7 @@ export const GameProvider = ({ children }) => {
       const wordString =
         typeof word === "string" ? word : word?.original || word;
       const length = wordString.length;
-      const categoryNum = length - 3; // Category 1 starts at 4-letter words
+      const categoryNum = validWordLengths.indexOf(length) + 1; // Category number based on index
 
       if (!categoriesUsed[categoryNum]) {
         categoriesUsed[categoryNum] = [];
@@ -44,7 +47,8 @@ export const GameProvider = ({ children }) => {
     });
 
     // Get current category number
-    const currentCategory = currentWordLength.current - 3;
+    const currentCategory =
+      validWordLengths.indexOf(currentWordLength.current) + 1;
 
     // Filter remaining words to only show current category length
     const remainingWords = allWords
@@ -88,12 +92,18 @@ Words Completed: ${categoriesUsed[currentCategory]?.length || 0}/${
     }
 
     if (remainingWords.length === 0) {
-      currentWordLength.current += 1;
-      setRound((prev) => prev + 1);
+      // Find the next valid word length
+      const currentIndex = validWordLengths.indexOf(currentWordLength.current);
+      const nextIndex = currentIndex + 1;
 
-      const newLengthWords = getWordsByLength(currentWordLength.current);
-      if (newLengthWords.length > 0) {
-        return newLengthWords[0];
+      if (nextIndex < validWordLengths.length) {
+        currentWordLength.current = validWordLengths[nextIndex];
+        setRound((prev) => prev + 1);
+
+        const newLengthWords = getWordsByLength(currentWordLength.current);
+        if (newLengthWords.length > 0) {
+          return newLengthWords[0];
+        }
       }
       return null;
     }
@@ -144,7 +154,8 @@ Words Completed: ${categoriesUsed[currentCategory]?.length || 0}/${
     const wordsByLength = {};
     newWords.forEach((word) => {
       const length = word.length;
-      if (length >= 4 && length <= 8) {
+      // Check if the length exists in our valid word lengths
+      if (validWordLengths.includes(length)) {
         if (!wordsByLength[length]) {
           wordsByLength[length] = [];
         }
@@ -162,6 +173,9 @@ Words Completed: ${categoriesUsed[currentCategory]?.length || 0}/${
 
   // Initialize first word when game starts
   useEffect(() => {
+    // Set initial word length to the smallest valid length
+    currentWordLength.current = validWordLengths[0];
+
     if (!currentWord) {
       const firstWord = getNextWord();
       if (firstWord) {
