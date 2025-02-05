@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PlayScreenWrapper from "./PlayScreenWrapper";
 import MenuModal from "../MenuModal/MenuModal";
 import useSoundEffects from "../../hooks/useSoundEffects";
 import { useGame } from "../../contexts/GameContext";
+import { FaFileWord } from "react-icons/fa";
 import { wordList } from "../../data/words";
 import { GamepadIcon, TrophyIcon, ClockIcon } from "../../assets/assets";
 import { TfiMenu } from "react-icons/tfi";
@@ -12,13 +13,18 @@ import {
   playRandomWrongSound,
   playRandomCorrectSound,
 } from "../../utils/answerSounds";
+import { useMusic } from "../../contexts/MusicContext";
 
 const PlayScreen = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
   const [guess, setGuess] = useState("");
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(0);
   const [isInvalid, setIsInvalid] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState("");
+  const [showStartButton, setShowStartButton] = useState(false);
+  const [isTimerPaused, setIsTimerPaused] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
   const { playHoverSound, playClickSound } = useSoundEffects();
   const {
     round,
@@ -28,9 +34,8 @@ const PlayScreen = () => {
     submitGuess,
     uploadWords,
     setRound,
-    setScore,
-    setCurrentWord,
   } = useGame();
+  const { isSoundOn } = useMusic();
   const navigate = useNavigate();
 
   // Initialize game on mount
@@ -40,18 +45,14 @@ const PlayScreen = () => {
 
   // Timer effect
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(timer);
-          // Handle time up logic here
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
+    let timer;
+    if (!isTimerPaused) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
     return () => clearInterval(timer);
-  }, [round]);
+  }, [isTimerPaused]);
 
   // Reset timer when starting new round
   useEffect(() => {
@@ -59,21 +60,21 @@ const PlayScreen = () => {
   }, [round]);
 
   const handleSubmit = () => {
-    if (soundOn) playClickSound();
+    if (isSoundOn) playClickSound();
     if (submitGuess(guess)) {
-      if (soundOn) playRandomCorrectSound();
+      if (isSoundOn) playRandomCorrectSound();
       setGuess("");
-      startNewRound();
-      setTimeLeft(60);
+      startNewRound(); // Immediately start a new round
+      setTimeLeft(60); // Reset timer immediately
     } else {
-      if (soundOn) playRandomWrongSound();
+      if (isSoundOn) playRandomWrongSound();
       setIsInvalid(true);
       setTimeout(() => setIsInvalid(false), 820);
     }
   };
 
   const handleMenuClick = () => {
-    if (soundOn) playClickSound();
+    if (isSoundOn) playClickSound();
     setIsModalOpen(true);
   };
 
@@ -88,16 +89,44 @@ const PlayScreen = () => {
   // Handle file upload
   const handleUpload = (event) => {
     const file = event.target.files[0];
-    if (file) {
+    if (file && file.type === "text/plain") {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const words = e.target.result
-          .split(/\r?\n/)
-          .filter((word) => word.trim() !== "");
-        uploadWords(words);
+        const content = e.target.result;
+        const lines = content.split(/\r?\n/);
+        const isValidCSV = lines.some((line) => line.includes(","));
+
+        if (isValidCSV) {
+          const words = lines
+            .join(",") // Join all lines to handle single-line CSV
+            .split(",")
+            .map((word) => word.trim())
+            .filter((word) => word !== "");
+          uploadWords(words);
+          setUploadStatus("uploaded");
+          setTimeout(() => {
+            setUploadStatus("");
+            setShowStartButton(true);
+            setIsTimerPaused(true);
+          }, 1500);
+        } else {
+          setUploadStatus("invalid");
+          setTimeout(() => setUploadStatus(""), 1500);
+        }
       };
       reader.readAsText(file);
+    } else {
+      setUploadStatus("invalid");
+      setTimeout(() => setUploadStatus(""), 1500);
     }
+  };
+
+  const handleStartGame = () => {
+    setRound("∞"); // Set round to infinity
+    setTimeLeft(0); // Reset timer to 0
+    startNewRound(); // Start a new round with user words
+    setShowStartButton(false); // Hide start button and show upload button
+    setIsTimerPaused(false);
   };
 
   return (
@@ -160,7 +189,9 @@ const PlayScreen = () => {
           </h1>
           <div className="p-6 mb-4 bg-purple-400 rounded-lg select-none word_box sm:p-8 md:p-10 sm:mb-6 md:mb-8">
             <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-white text-center tracking-widest drop-shadow-[3px_3px_0px_var(--tw-shadow-color)] shadow-violet-700 select-none">
-              {currentWord ? currentWord.scrambled.toUpperCase() : ""}
+              {!transitioning && currentWord
+                ? currentWord.scrambled.toUpperCase()
+                : ""}
             </p>
           </div>
           <div className="flex flex-col space-y-4 input_wrapper sm:flex-row sm:space-x-4 sm:space-y-0">
@@ -218,17 +249,49 @@ const PlayScreen = () => {
           onChange={handleUpload}
         />
         <label htmlFor="upload-input" className="select-none">
+          {!showStartButton && (
+            <button
+              className={`mx-auto mt-6 text-lg text-white rounded-full shadow-lg select-none upload_btn sm:mt-8 md:mt-10 sm:text-xl md:text-2xl
+                ${uploadStatus === "uploaded" ? "bg-green-700" : ""}
+                ${uploadStatus === "invalid" ? "bg-red-500" : "bg-amber-700"}`}
+              onMouseEnter={isSoundOn ? playHoverSound : null}
+              onClick={() => document.getElementById("upload-input").click()}
+            >
+              <span
+                className={`block inline-flex items-center px-6 py-3 w-full tracking-wider rounded-full -translate-y-1 select-none upload_btn_text sm:px-8 md:px-10 sm:py-4 hover:bg-gradient-to-tl active:-translate-y-0
+                ${
+                  uploadStatus === "uploaded"
+                    ? "bg-gradient-to-br from-green-400 via-green-500 to-green-600"
+                    : ""
+                }
+                ${
+                  uploadStatus === "invalid"
+                    ? "bg-gradient-to-br from-red-400 via-red-500 to-red-600"
+                    : "bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600"
+                }`}
+              >
+                <RiFileUploadFill className="mr-2 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+                {uploadStatus === "uploaded"
+                  ? "Uploaded"
+                  : uploadStatus === "invalid"
+                  ? "Invalid!"
+                  : "Upload File"}
+              </span>
+            </button>
+          )}
+        </label>
+
+        {showStartButton && (
           <button
-            className="mx-auto mt-6 text-lg text-white bg-amber-700 rounded-full shadow-lg select-none upload_btn sm:mt-8 md:mt-10 sm:text-xl md:text-2xl"
-            onMouseEnter={soundOn ? playHoverSound : null}
-            onClick={() => document.getElementById("upload-input").click()}
+            className="mx-auto mt-6 text-lg text-white bg-green-700 rounded-full shadow-lg select-none start_btn sm:mt-8 md:mt-10 sm:text-xl md:text-2xl"
+            onClick={handleStartGame}
           >
-            <span className="block inline-flex items-center px-6 py-3 w-full tracking-wider bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 rounded-full -translate-y-1 select-none upload_btn_text sm:px-8 md:px-10 sm:py-4 hover:bg-gradient-to-tl active:-translate-y-0">
-              <RiFileUploadFill className="mr-2 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
-              Word File
+            <span className="block inline-flex items-center px-6 py-3 w-full tracking-wider bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-full -translate-y-1 select-none start_btn_text sm:px-8 md:px-10 sm:py-4 hover:bg-gradient-to-tl active:-translate-y-0">
+              <FaFileWord className="mr-2 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+              Start Game
             </span>
           </button>
-        </label>
+        )}
       </div>
 
       {/* Menu Modal */}
