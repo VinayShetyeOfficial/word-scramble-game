@@ -57,7 +57,7 @@ export const wordList = {
     { original: "WEATHER", scrambled: "HTREAEW" },
   ]),
   8: shuffleArray([
-    { original: "ELEPHANT", scrambled: "PHEANTLS" },
+    { original: "ELEPHANT", scrambled: "PHEANTLE" },
     { original: "DINOSAUR", scrambled: "OSNUIDAR" },
     { original: "SUNSHINE", scrambled: "SSEHNUNI" },
     { original: "AIRPLANE", scrambled: "RAELIPAN" },
@@ -81,16 +81,37 @@ export const wordList = {
     { original: "KNOWLEDGE", scrambled: "WLEDGEKON" },
   ]),
   10: shuffleArray([
-    { original: "ARCHITECTURE", scrambled: "ATRIERCTUEC" },
-    { original: "PHOTOGRAPHY", scrambled: "HOPGRTOPAHY" },
-    { original: "CONVERSATION", scrambled: "RNCOISAVETON" },
-    { original: "HOSPITALITY", scrambled: "HITLOPSAITY" },
-    { original: "INTERNET", scrambled: "TITNEREN" },
     { original: "FRIENDSHIP", scrambled: "SHIPFIRNED" },
-    { original: "DEMONSTRATE", scrambled: "AODSTRNETEM" },
-    { original: "ESTABLISHMENT", scrambled: "BESMNEITLHA" },
-    { original: "ORGANIZATION", scrambled: "NRIANIZOGATON" },
+    { original: "BASKETBALL", scrambled: "KEBALLTBAS" },
+    { original: "TELEVISION", scrambled: "SIONTELEVI" },
+    { original: "TECHNOLOGY", scrambled: "GYCHNOLOET" },
+    { original: "UNDERSTAND", scrambled: "STANDERUND" },
+    { original: "PARTICULAR", scrambled: "CULARTIPRA" },
+    { original: "EFFICIENCY", scrambled: "CIENCYEFFI" },
+    { original: "CONSISTENT", scrambled: "SISTENTCON" },
+    { original: "EXPERIMENT", scrambled: "MENTEXPERI" },
+    { original: "COLLECTION", scrambled: "TIONCOLLEC" },
   ]),
+  // 11: shuffleArray([
+  //   { original: "INTERESTING", scrambled: "TINGREESTIN" },
+  //   { original: "EXPERIENCE", scrambled: "PERIENCEXE" },
+  // ]),
+  // 12: shuffleArray([
+  //   { original: "PROFESSIONAL", scrambled: "SIONALPROFES" },
+  //   { original: "INTELLIGENCE", scrambled: "GENCEINTELIL" },
+  // ]),
+  // 13: shuffleArray([
+  //   { original: "INTERNATIONAL", scrambled: "NATIONALTERIN" },
+  //   { original: "REVOLUTIONARY", scrambled: "TIONARYREVOLU" },
+  // ]),
+  // 14: shuffleArray([
+  //   { original: "CHARACTERISTIC", scrambled: "RISTICCHARACTE" },
+  //   { original: "CLASSIFICATION", scrambled: "CATIONCLASSIFI" },
+  // ]),
+  // 15: shuffleArray([
+  //   { original: "RESPONSIBILITY", scrambled: "SIBILITYSPONRE" },
+  //   { original: "ADMINISTRATION", scrambled: "TRATIONADMINIS" },
+  // ]),
 };
 
 // Add word length validation
