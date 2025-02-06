@@ -38,6 +38,16 @@ const PlayScreenWrapper = styled.div`
       rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
   }
 
+  .guess-input.disabled {
+    background-color: #f0f0f0;
+    color: #666;
+    cursor: not-allowed;
+  }
+
+  .guess-input.disabled::placeholder {
+    color: #666;
+  }
+
   @media (max-width: 900px) {
     .navbar {
       padding: 0;
