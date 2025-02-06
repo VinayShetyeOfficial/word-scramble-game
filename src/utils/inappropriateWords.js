@@ -26,6 +26,7 @@ export const inappropriateWords = [
   "cock",
   "porn",
   "sex",
+  "sexy",
   "nude",
   "hentai",
   "kill",
