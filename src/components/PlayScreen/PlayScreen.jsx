@@ -14,6 +14,7 @@ import {
   playRandomCorrectSound,
 } from "../../utils/answerSounds";
 import { useMusic } from "../../contexts/MusicContext";
+import { validateWords } from "../../utils/wordValidator";
 
 const PlayScreen = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,6 +26,8 @@ const PlayScreen = () => {
   const [showStartButton, setShowStartButton] = useState(false);
   const [isTimerPaused, setIsTimerPaused] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
+  const [validationStatus, setValidationStatus] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { playHoverSound, playClickSound } = useSoundEffects();
   const {
     round,
@@ -34,6 +37,7 @@ const PlayScreen = () => {
     submitGuess,
     uploadWords,
     setRound,
+    setScore,
   } = useGame();
   const { isSoundOn } = useMusic();
   const navigate = useNavigate();
@@ -87,83 +91,137 @@ const PlayScreen = () => {
   };
 
   // Add the file processing logic
-  const handleUpload = (event) => {
+  const handleUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
+    setIsProcessing(true);
+    setValidationStatus("validating");
+
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const text = e.target.result.trim();
         console.log("Raw file content:", text);
 
-        // Split the text into words
+        // Split into words
         const rawWords = text
           .split(/[,\s\n]+/)
-          .map((word) => word.trim())
+          .map((word) => word.trim().toLowerCase())
           .filter((word) => word.length > 0);
 
         console.log("Raw words:", rawWords);
 
-        // Process into word objects
-        const processedWords = rawWords
-          .filter((word) => word.length >= 4 && word.length <= 10)
-          .map((word) => ({
-            original: word.toUpperCase(),
-            scrambled: word
-              .toUpperCase()
-              .split("")
-              .sort(() => Math.random() - 0.5)
-              .join(""),
-          }));
+        // Set validating status with timeout
+        setUploadStatus("validating");
 
-        console.log("Processed words:", processedWords);
+        // Add artificial delay for validation status
+        await new Promise((resolve) => setTimeout(resolve, 1500));
 
-        if (processedWords.length === 0) {
+        // Validate words
+        const { validWords, invalidWords, rejectedWords } = await validateWords(
+          rawWords
+        );
+
+        // Log validation results
+        console.log("Validation Results:", {
+          valid: validWords,
+          invalid: invalidWords,
+          rejected: rejectedWords,
+        });
+
+        setValidationStatus({
+          valid: validWords.length,
+          invalid: invalidWords.length,
+          rejected: rejectedWords.length,
+        });
+
+        if (validWords.length === 0) {
           setUploadStatus("invalid");
-          setTimeout(() => setUploadStatus(""), 1500);
+          setTimeout(() => {
+            setUploadStatus("");
+            setValidationStatus(null);
+            setIsProcessing(false);
+          }, 1500);
           return;
         }
 
-        // Upload the processed words
-        const success = uploadWords(processedWords);
+        // Process valid words
+        const processedWords = validWords.map((word) => ({
+          original: word.toUpperCase(),
+          scrambled: word
+            .toUpperCase()
+            .split("")
+            .sort(() => Math.random() - 0.5)
+            .join(""),
+        }));
+
+        // Upload processed words
+        const success = await uploadWords(processedWords);
 
         if (success) {
           setUploadStatus("uploaded");
+          setIsTimerPaused(true);
+          event.target.value = ""; // Clear the file input
+          const inputElement = document.querySelector('input[type="text"]');
+          if (inputElement) {
+            inputElement.disabled = true;
+            inputElement.placeholder = "Custom words loaded...";
+          }
           setTimeout(() => {
             setUploadStatus("");
             setShowStartButton(true);
-            setIsTimerPaused(true);
+            setValidationStatus(null);
+            setIsProcessing(false);
           }, 1500);
-
-          // Verify the upload
-          const savedWords = localStorage.getItem("userWords");
-          console.log("Saved words:", savedWords);
         } else {
-          setUploadStatus("invalid");
+          setUploadStatus("error");
           setTimeout(() => setUploadStatus(""), 1500);
         }
       } catch (error) {
         console.error("Error processing file:", error);
-        setUploadStatus("invalid");
+        setUploadStatus("error");
         setTimeout(() => setUploadStatus(""), 1500);
       }
     };
 
     reader.onerror = () => {
       setUploadStatus("invalid");
-      setTimeout(() => setUploadStatus(""), 1500);
+      setTimeout(() => {
+        setUploadStatus("");
+        setIsProcessing(false);
+      }, 1500);
     };
 
     reader.readAsText(file);
   };
 
+  // Update the button text based on status
+  const getButtonText = () => {
+    switch (uploadStatus) {
+      case "validating":
+        return "Validating...";
+      case "uploaded":
+        return "Uploaded!";
+      case "invalid":
+        return "Invalid!";
+      default:
+        return "Upload File";
+    }
+  };
+
   const handleStartGame = () => {
-    setRound("∞"); // Set round to infinity
-    setTimeLeft(0); // Reset timer to 0
-    startNewRound(); // Start a new round with user words
-    setShowStartButton(false); // Hide start button and show upload button
+    setShowStartButton(false);
+    setTimeLeft(60);
+    setScore(0);
     setIsTimerPaused(false);
+    startNewRound();
+    // Re-enable the input when game starts
+    const inputElement = document.querySelector('input[type="text"]');
+    if (inputElement) {
+      inputElement.disabled = false;
+      inputElement.placeholder = "Type your guess here...";
+    }
   };
 
   return (
@@ -243,14 +301,18 @@ const PlayScreen = () => {
               onKeyPress={(e) =>
                 e.key === "Enter" && guess.trim() && handleSubmit()
               }
-              placeholder={`Enter ${
-                currentWord ? currentWord.scrambled.length : ""
-              } letters`}
+              placeholder={
+                uploadStatus === "uploaded"
+                  ? "Custom words loaded..."
+                  : "Type your guess here..."
+              }
               maxLength={currentWord ? currentWord.scrambled.length : 0}
               className={`p-3 w-full text-lg tracking-wider placeholder-purple-200 
                 text-white uppercase bg-purple-400 rounded-lg answer_field 
                 sm:text-xl md:text-2xl sm:p-4 focus:outline-none focus:ring-2 
-                focus:ring-purple-600 ${isInvalid ? "invalid" : ""}`}
+                focus:ring-purple-600 ${isInvalid ? "invalid" : ""} ${
+                uploadStatus === "uploaded" ? "disabled" : ""
+              }`}
             />
             <button
               className={`mx-auto text-lg tracking-wider text-white rounded-full shadow-lg submit_btn sm:text-xl md:text-2xl sm:mx-0 select-none
@@ -261,7 +323,7 @@ const PlayScreen = () => {
                 }`}
               onMouseEnter={() => guess.trim() && soundOn && playHoverSound()}
               onClick={() => guess.trim() && handleSubmit()}
-              disabled={!guess.trim()}
+              disabled={!guess.trim() || uploadStatus === "uploaded"}
             >
               <span
                 className={`block px-6 py-3 rounded-full -translate-y-1 submit_btn_text 
@@ -284,35 +346,44 @@ const PlayScreen = () => {
           accept=".txt"
           style={{ display: "none" }}
           onChange={handleUpload}
+          disabled={isProcessing}
         />
         <label htmlFor="upload-input" className="select-none">
           {!showStartButton && (
             <button
               className={`mx-auto mt-6 text-lg text-white rounded-full shadow-lg select-none upload_btn sm:mt-8 md:mt-10 sm:text-xl md:text-2xl
                 ${uploadStatus === "uploaded" ? "bg-green-700" : ""}
-                ${uploadStatus === "invalid" ? "bg-red-500" : "bg-amber-700"}`}
-              onMouseEnter={isSoundOn ? playHoverSound : null}
-              onClick={() => document.getElementById("upload-input").click()}
+                ${uploadStatus === "invalid" ? "bg-red-500" : "bg-amber-700"}
+                ${isProcessing ? "cursor-not-allowed opacity-75" : ""}`}
+              onMouseEnter={!isProcessing && isSoundOn ? playHoverSound : null}
+              onClick={(e) => {
+                if (isProcessing) {
+                  e.preventDefault();
+                  return;
+                }
+                document.getElementById("upload-input").click();
+              }}
             >
               <span
-                className={`block inline-flex items-center px-6 py-3 w-full tracking-wider rounded-full -translate-y-1 select-none upload_btn_text sm:px-8 md:px-10 sm:py-4 hover:bg-gradient-to-tl active:-translate-y-0
-                ${
-                  uploadStatus === "uploaded"
-                    ? "bg-gradient-to-br from-green-400 via-green-500 to-green-600"
-                    : ""
-                }
-                ${
-                  uploadStatus === "invalid"
-                    ? "bg-gradient-to-br from-red-400 via-red-500 to-red-600"
-                    : "bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600"
-                }`}
+                className={`block inline-flex items-center px-6 py-3 w-full tracking-wider rounded-full -translate-y-1 select-none upload_btn_text sm:px-8 md:px-10 sm:py-4 
+                  ${
+                    !isProcessing
+                      ? "hover:bg-gradient-to-tl active:-translate-y-0"
+                      : ""
+                  }
+                  ${
+                    uploadStatus === "uploaded"
+                      ? "bg-gradient-to-br from-green-400 via-green-500 to-green-600"
+                      : ""
+                  }
+                  ${
+                    uploadStatus === "invalid"
+                      ? "bg-gradient-to-br from-red-400 via-red-500 to-red-600"
+                      : "bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600"
+                  }`}
               >
                 <RiFileUploadFill className="mr-2 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
-                {uploadStatus === "uploaded"
-                  ? "Uploaded"
-                  : uploadStatus === "invalid"
-                  ? "Invalid!"
-                  : "Upload File"}
+                {getButtonText()}
               </span>
             </button>
           )}
