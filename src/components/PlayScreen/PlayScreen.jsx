@@ -38,6 +38,7 @@ const PlayScreen = () => {
     uploadWords,
     setRound,
     setScore,
+    userWords,
   } = useGame();
   const { isSoundOn } = useMusic();
   const navigate = useNavigate();
@@ -215,7 +216,16 @@ const PlayScreen = () => {
     setTimeLeft(60);
     setScore(0);
     setIsTimerPaused(false);
+    
+    // Set round to infinite only when starting game with custom words
+    if (Object.keys(userWords).length > 0) {
+      setRound("∞");
+    } else {
+      setRound(1); // Reset to 1 for default word list
+    }
+    
     startNewRound();
+    
     // Re-enable the input when game starts
     const inputElement = document.querySelector('input[type="text"]');
     if (inputElement) {
