@@ -41,20 +41,12 @@ export const MusicProvider = ({ children }) => {
     setIsSoundOn((prevState) => !prevState);
   }, []);
 
-  const resetGame = useCallback(() => {
-    setIsMusicOn(true);
-    setIsSoundOn(true);
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
-  }, []);
-
   const value = {
     isMusicOn,
     isSoundOn,
     toggleMusic,
     toggleSound,
     startMusic,
-    resetGame,
   };
 
   return (
