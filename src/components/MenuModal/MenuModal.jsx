@@ -5,9 +5,9 @@ import { CloseIcon } from "../../assets/assets";
 import { HiMiniSpeakerWave, HiMiniSpeakerXMark } from "react-icons/hi2";
 import { PiInfoFill } from "react-icons/pi";
 import { IoCheckmarkCircle } from "react-icons/io5";
-import { FaRegLightbulb, FaFileUpload } from "react-icons/fa";
+import { FaLightbulb, FaFileUpload } from "react-icons/fa";
 import { RxLapTimer } from "react-icons/rx";
-import { MdUpload } from "react-icons/md";
+import { MdLeaderboard } from "react-icons/md";
 import useSoundEffects from "../../hooks/useSoundEffects";
 import { useMusic } from "../../contexts/MusicContext"; // Added MusicContext import
 
@@ -165,7 +165,7 @@ const MenuModal = ({ isOpen, onClose }) => {
                   </p>
                 </div>
                 <div className="flex items-start mb-4 space-x-2 space-x-4 modal_item item_3">
-                  <FaRegLightbulb className="w-20 h-6 text-yellow-500 modal_icon icon_3" />
+                  <FaLightbulb className="w-20 h-6 text-yellow-500 modal_icon icon_3" />
                   <p className="font-sans text-lg font-bold tracking-wide leading-5">
                     <strong className="text-yellow-600">Hints:</strong> Use
                     hints if you get stuck. Each hint will reveal one letter of
@@ -173,7 +173,7 @@ const MenuModal = ({ isOpen, onClose }) => {
                   </p>
                 </div>
                 <div className="flex items-start mb-4 space-x-2 space-x-4 modal_item item_4">
-                  <MdUpload className="w-20 h-6 text-red-500 modal_icon icon_4" />
+                  <MdLeaderboard className="w-20 h-6 text-red-500 modal_icon icon_4" />
                   <p className="font-sans text-lg font-bold tracking-wide leading-5">
                     <strong className="text-red-600">Leaderboard:</strong> Check
                     out the top players on the leaderboard. Aim for the highest
