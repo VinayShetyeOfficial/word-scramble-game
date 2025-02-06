@@ -25,8 +25,8 @@ export const GameProvider = ({ children }) => {
     .sort((a, b) => a - b);
 
   const getNextWord = () => {
-    // For custom words mode (infinite rounds)
-    if (round === "∞" && Object.keys(userWords).length > 0) {
+    // Check if we have custom words and we're in infinite mode
+    if (Object.keys(userWords).length > 0) {
       try {
         // Get all available lengths from user uploaded words
         const availableLengths = Object.keys(userWords)
@@ -98,7 +98,7 @@ Remaining Word List: [${unusedAllWords.map((w) => w.original).join(", ")}]
       }
     }
 
-    // Default word list mode with debug info
+    // Default word list mode only if no custom words available
     try {
       const availableWords = getWordsByLength(currentWordLength.current);
       if (!availableWords || availableWords.length === 0) return null;
@@ -200,7 +200,6 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
       // Group words by length
       const wordsByLength = {};
       validWords.forEach((wordObj) => {
-        // Get the original word from the word object
         const word = wordObj.original;
         const length = word.length;
 
@@ -223,7 +222,6 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
       });
 
       setUserWords(wordsByLength);
-      setRound("∞");
       console.log("Valid words:", validWords);
       console.log("Words grouped by length:", wordsByLength);
 
