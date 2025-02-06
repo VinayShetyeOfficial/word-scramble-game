@@ -2,8 +2,6 @@ import styled from "styled-components";
 
 const PlayScreenWrapper = styled.div`
   .game_bar {
-    display: flex;
-    justify-content: space-between;
     background: rgba(255, 255, 255, 0.3);
     border-radius: 16px;
     backdrop-filter: blur(10.8px);
@@ -16,6 +14,9 @@ const PlayScreenWrapper = styled.div`
   .answer_field {
     box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
       rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
+      rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
+      rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
   }
 
   .answer_field::placeholder {
@@ -70,27 +71,11 @@ const PlayScreenWrapper = styled.div`
       border-radius: 0;
       background-color: transparent;
       backdrop-filter: blur(0px);
+      padding: 16px;
     }
   }
 
   @media (max-width: 700px) {
-    .game_bar {
-      padding: 6px 15px;
-    }
-
-    .game_bar span {
-      font-size: 20px;
-    }
-
-    .menu_btn_text {
-      padding: 12px;
-    }
-
-    .menu_btn_icon {
-      width: 20px;
-      height: 20px;
-    }
-
     .game_bar_icon {
       display: none;
     }
@@ -124,129 +109,114 @@ const PlayScreenWrapper = styled.div`
       margin: 25px auto 0;
       max-width: fit-content;
     }
-  }
 
-  @media (max-width: 506px) {
-    .play_box h1 {
-      font-size: 40px;
-    }
+    @media (max-width: 540px) {
+      .navbar {
+      }
 
-    .word_box {
-      padding: 30px 25px;
-      margin-bottom: 25px;
-    }
+      .game_bar {
+        padding: 6px 15px;
+      }
 
-    .word_box p {
-      font-size: 30px;
-    }
+      .game_bar span {
+        font-size: 20px;
+      }
 
-    .space-x-5px > :not([hidden]) ~ :not([hidden]) {
-      --tw-space-x-reverse: 0;
-      margin-right: calc(16px * var(--tw-space-x-reverse));
-      margin-left: calc(16px * calc(1 - var(--tw-space-x-reverse)));
-    }
+      .menu_btn_text {
+        padding: 12px;
+      }
 
-    .submit_btn_text,
-    .upload_btn_text {
-      font-size: 20px;
-      padding: 13px 20px;
-    }
-  }
-
-  @media (max-width: 430px) {
-    .play_box {
-      padding: 24px;
+      .menu_btn_icon {
+        width: 20px;
+        height: 20px;
+      }
     }
 
-    .play_box h1 {
-      font-size: 28px;
-      margin-bottom: 25px;
+    @media (max-width: 506px) {
+      .play_box h1 {
+        font-size: 40px;
+      }
+
+      .word_box {
+        padding: 30px 25px;
+        margin-bottom: 25px;
+      }
+
+      .word_box p {
+        font-size: 30px;
+      }
+
+      .space-x-5px > :not([hidden]) ~ :not([hidden]) {
+        --tw-space-x-reverse: 0;
+        margin-right: calc(16px * var(--tw-space-x-reverse));
+        margin-left: calc(16px * calc(1 - var(--tw-space-x-reverse)));
+      }
+
+      .submit_btn_text,
+      .upload_btn_text {
+        font-size: 20px;
+        padding: 13px 20px;
+      }
     }
 
-    .word_box p {
-      font-size: 24px;
+    @media (max-width: 430px) {
+      .play_box {
+        padding: 24px;
+      }
+
+      .play_box h1 {
+        font-size: 28px;
+        margin-bottom: 25px;
+      }
+
+      .word_box p {
+        font-size: 24px;
+      }
+
+      .input_wrapper input {
+        font-size: 18px;
+        padding: 12px;
+      }
+
+      .submit_btn_text,
+      .upload_btn_text {
+        font-size: 16px;
+        padding: 8px 18px;
+      }
+
+      .game_bar span {
+        font-size: 16px;
+      }
     }
 
-    .input_wrapper input {
-      font-size: 18px;
-      padding: 12px;
-    }
+    @media (max-width: 320px) {
+      .playscreen_main {
+        padding: 0.7rem;
+      }
 
-    .submit_btn_text,
-    .upload_btn_text {
-      font-size: 16px;
-      padding: 8px 18px;
-    }
+      .play_box_heading,
+      .word_box {
+        margin-bottom: 15px !important;
+      }
 
-    .game_bar span {
-      font-size: 16px;
-    }
-  }
+      .word_box_container {
+        padding: 1rem;
+      }
 
-  @media (max-width: 320px) {
-    .playscreen_main {
-      padding: 0.7rem;
-    }
+      .modal_box {
+        padding: 15px 20px !important;
+      }
 
-    .play_box_heading,
-    .word_box {
-      margin-bottom: 15px !important;
-    }
+      .help_modal {
+      }
 
-    .word_box_container {
-      padding: 1rem;
-    }
+      .help_modal_heading {
+        font-size: 20px !important;
+      }
 
-    .modal_box {
-      padding: 15px 20px !important;
-    }
-
-    .help_modal_heading {
-      font-size: 20px !important;
-    }
-
-    .modal_items {
-      padding-bottom: 20px !important;
-    }
-
-    .game_bar .label {
-      font-size: 12px;
-    }
-
-    .game_bar span {
-      font-size: 14px;
-    }
-  }
-
-  .answer_field.invalid {
-    animation: invalidShake 1s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-  }
-
-  @keyframes invalidShake {
-    0%,
-    100% {
-      color: #ffffff;
-    }
-    20%,
-    60% {
-      color: #e03c3c;
-    }
-    40%,
-    80% {
-      color: #ffffff;
-    }
-    10%,
-    30%,
-    50%,
-    70%,
-    90% {
-      transform: translateX(-1px);
-    }
-    20%,
-    40%,
-    60%,
-    80% {
-      transform: translateX(1px);
+      .modal_items {
+        padding-bottom: 20px !important;
+      }
     }
   }
 `;
