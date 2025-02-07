@@ -5,6 +5,7 @@ import ClockIcon from "./images/icons/clock.png";
 import MenuIcon from "./images/icons/hamburger_menu.png";
 import UploadIcon from "./images/icons/upload.png";
 import CloseIcon from "./images/icons/close.png";
+import HeartIcon from "./images/icons/heart.png";
 
 // Import audio - hover
 import HoverSound from "./audio/hover/hover.mp3";
@@ -44,6 +45,7 @@ export {
   MenuIcon,
   UploadIcon,
   CloseIcon,
+  HeartIcon,
   HoverSound,
   ClickSound1,
   ClickSound2,
