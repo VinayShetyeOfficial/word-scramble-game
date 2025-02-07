@@ -37,7 +37,11 @@ import WrongSound4 from "./audio/answer_status/wrong_4.mp3";
 import WrongSound5 from "./audio/answer_status/wrong_5.mp3";
 import WrongSound6 from "./audio/answer_status/wrong_6.mp3";
 
+// Import audio - game over
+import GameOverSound from "./audio/gameover/gameover1.mp3";
+
 // Export the assets
+
 export {
   GamepadIcon,
   TrophyIcon,
@@ -66,4 +70,5 @@ export {
   WrongSound4,
   WrongSound5,
   WrongSound6,
+  GameOverSound,
 };
