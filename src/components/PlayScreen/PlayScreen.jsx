@@ -393,11 +393,15 @@ const PlayScreen = () => {
           <div className="p-6 mb-4 bg-purple-400 rounded-lg select-none word_box sm:p-8 md:p-10 sm:mb-6 md:mb-8">
             <div className="game-lives">{renderHearts()}</div>
 
-            <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-white text-center tracking-widest drop-shadow-[3px_3px_0px_var(--tw-shadow-color)] shadow-violet-700 select-none">
-              {!transitioning && currentWord
-                ? currentWord.scrambled.toUpperCase()
-                : ""}
-            </p>
+            <div className="flex flex-col justify-center items-center w-full">
+              <p className="mb-4 text-2xl font-bold text-white sm:text-3xl md:text-4xl lg:text-5xl drop-shadow-[3px_3px_0px_var(--tw-shadow-color)] shadow-violet-800">
+                {lives === 0
+                  ? "Game Over"
+                  : currentWord
+                  ? currentWord.scrambled.toUpperCase()
+                  : ""}
+              </p>
+            </div>
           </div>
           <div className="flex flex-col space-y-4 input_wrapper sm:flex-row sm:space-x-4 sm:space-y-0">
             <input
