@@ -13,6 +13,12 @@ const PlayScreenWrapper = styled.div`
       rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
   }
 
+  .game_bar_icon {
+    filter: drop-shadow(0 0 1px #7e22ce) drop-shadow(0 0 1px #7e22ce)
+      drop-shadow(0 0 2px #7e22ce);
+    transition: all 0.3s ease;
+  }
+
   .answer_field {
     box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
       rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
@@ -28,7 +34,35 @@ const PlayScreenWrapper = styled.div`
       rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
   }
 
+  .word_box .game-lives {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    color: #e03c3c;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    filter: drop-shadow(1px 1px 2px rgba(255, 255, 255, 0.5));
+  }
+
+  .game-lives .game-life-icon {
+    width: 20px;
+    height: 20px;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 2px #a855f7) drop-shadow(0 0 4px #a855f7)
+      drop-shadow(0 0 6px #a855f7);
+
+    &.lost {
+      color: #666;
+      opacity: 0.5;
+      transform: scale(0.9);
+      filter: none;
+    }
+  }
+
   .word_box {
+    position: relative;
     background: rgba(255, 255, 255, 0.26);
     border-radius: 16px;
     backdrop-filter: blur(16.7px);
@@ -80,6 +114,17 @@ const PlayScreenWrapper = styled.div`
       border-radius: 0;
       background-color: transparent;
       backdrop-filter: blur(0px);
+    }
+
+    .game-lives {
+      top: 10px;
+      right: 14px;
+      gap: 6px;
+    }
+
+    .game-life-icon {
+      width: 18px;
+      height: 18px;
     }
   }
 
@@ -134,6 +179,17 @@ const PlayScreenWrapper = styled.div`
       margin: 25px auto 0;
       max-width: fit-content;
     }
+
+    .game-lives {
+      top: 8px;
+      right: 12px;
+      gap: 5px;
+    }
+
+    .game-life-icon {
+      width: 16px;
+      height: 16px;
+    }
   }
 
   @media (max-width: 506px) {
@@ -160,6 +216,17 @@ const PlayScreenWrapper = styled.div`
     .upload_btn_text {
       font-size: 20px;
       padding: 13px 20px;
+    }
+
+    .game-lives {
+      top: 7px;
+      right: 10px;
+      gap: 3px;
+    }
+
+    .game-lives .game-life-icon {
+      width: 18px;
+      height: 18px;
     }
   }
 
@@ -190,6 +257,17 @@ const PlayScreenWrapper = styled.div`
 
     .game_bar span {
       font-size: 16px;
+    }
+
+    .game-lives {
+      top: 6px;
+      right: 8px;
+      gap: 3px;
+    }
+
+    .game-life-icon {
+      width: 12px;
+      height: 12px;
     }
   }
 
@@ -225,6 +303,17 @@ const PlayScreenWrapper = styled.div`
 
     .game_bar span {
       font-size: 14px;
+    }
+
+    .game-lives {
+      top: 5px;
+      right: 6px;
+      gap: 3px;
+    }
+
+    .game-life-icon {
+      width: 10px;
+      height: 10px;
     }
   }
 
