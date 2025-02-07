@@ -13,6 +13,7 @@ import {
   TrophyIcon,
   ClockIcon,
   GameOverSound,
+  LifeDownSound,
 } from "../../assets/assets";
 import { TfiMenu } from "react-icons/tfi";
 import { RiFileUploadFill } from "react-icons/ri";
@@ -59,6 +60,7 @@ const PlayScreen = () => {
   const navigate = useNavigate();
 
   const gameOverSoundRef = React.useRef(new Audio(GameOverSound));
+  const lifeDownSoundRef = React.useRef(new Audio(LifeDownSound));
 
   // Remove the useLayoutEffect initialization
   useEffect(() => {
@@ -75,35 +77,44 @@ const PlayScreen = () => {
       timer = setInterval(() => {
         setTimeLeft((prevTime) => {
           if (prevTime <= 1 && !isReducingLife.current) {
-            // When time runs out, only log the answer
             console.log("Time's up! Current word:", currentWord?.original);
 
             isReducingLife.current = true;
-            // Reduce lives first
-            setLives((prevLives) => {
-              const newLives = prevLives - 1;
-              if (newLives > 0) {
-                // Only start new round after lives are reduced
-                setTimeout(() => {
-                  startNewRound();
-                  setTimeLeft(10);
-                  setGuess("");
+            // Play life down sound immediately
+            if (isSoundOn && lives > 1) {
+              lifeDownSoundRef.current
+                .play()
+                .catch((error) =>
+                  console.error("Error playing life down sound:", error)
+                );
+            }
+
+            // Delay the life reduction to sync with sound
+            setTimeout(() => {
+              setLives((prevLives) => {
+                const newLives = prevLives - 1;
+                if (newLives > 0) {
+                  setTimeout(() => {
+                    startNewRound();
+                    setTimeLeft(10);
+                    setGuess("");
+                    isReducingLife.current = false;
+                  }, 0);
+                } else {
+                  setIsTimerPaused(true);
                   isReducingLife.current = false;
-                }, 0);
-              } else {
-                setIsTimerPaused(true);
-                isReducingLife.current = false;
-                // Play game over sound when lives reach 0
-                if (isSoundOn) {
-                  gameOverSoundRef.current
-                    .play()
-                    .catch((error) =>
-                      console.error("Error playing game over sound:", error)
-                    );
+                  // Play game over sound only on last life
+                  if (isSoundOn) {
+                    gameOverSoundRef.current
+                      .play()
+                      .catch((error) =>
+                        console.error("Error playing game over sound:", error)
+                      );
+                  }
                 }
-              }
-              return newLives;
-            });
+                return newLives;
+              });
+            }, 250); // Small delay before reducing life
 
             return 0;
           }
@@ -116,9 +127,9 @@ const PlayScreen = () => {
       clearInterval(timer);
       isReducingLife.current = false;
     };
-  }, [isTimerPaused, currentWord, isSoundOn]);
+  }, [isTimerPaused, currentWord, isSoundOn, lives]);
 
-  // Updated renderHearts function to reduce from left to right
+  // Updated renderHearts function with longer transition
   const renderHearts = () => {
     return Array(3)
       .fill(null)
@@ -130,7 +141,7 @@ const PlayScreen = () => {
           className={`game-life-icon ${index >= lives ? "lost" : ""}`}
           style={{
             opacity: index >= lives ? 0.4 : 1,
-            transition: "opacity 0.3s ease",
+            transition: "opacity 0.4s ease 0.1s", // Added delay to transition
           }}
         />
       ));
