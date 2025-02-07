@@ -8,7 +8,12 @@ import { FaFileWord } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa";
 import { wordList } from "../../data/words";
 import { HeartIcon } from "../../assets/assets";
-import { GamepadIcon, TrophyIcon, ClockIcon } from "../../assets/assets";
+import {
+  GamepadIcon,
+  TrophyIcon,
+  ClockIcon,
+  GameOverSound,
+} from "../../assets/assets";
 import { TfiMenu } from "react-icons/tfi";
 import { RiFileUploadFill } from "react-icons/ri";
 import {
@@ -53,6 +58,8 @@ const PlayScreen = () => {
   const { isSoundOn } = useMusic();
   const navigate = useNavigate();
 
+  const gameOverSoundRef = React.useRef(new Audio(GameOverSound));
+
   // Remove the useLayoutEffect initialization
   useEffect(() => {
     if (!currentWord) {
@@ -86,6 +93,14 @@ const PlayScreen = () => {
               } else {
                 setIsTimerPaused(true);
                 isReducingLife.current = false;
+                // Play game over sound when lives reach 0
+                if (isSoundOn) {
+                  gameOverSoundRef.current
+                    .play()
+                    .catch((error) =>
+                      console.error("Error playing game over sound:", error)
+                    );
+                }
               }
               return newLives;
             });
@@ -101,7 +116,7 @@ const PlayScreen = () => {
       clearInterval(timer);
       isReducingLife.current = false;
     };
-  }, [isTimerPaused, currentWord]);
+  }, [isTimerPaused, currentWord, isSoundOn]);
 
   // Updated renderHearts function to reduce from left to right
   const renderHearts = () => {
