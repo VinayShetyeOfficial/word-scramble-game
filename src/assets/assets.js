@@ -40,6 +40,9 @@ import WrongSound6 from "./audio/answer_status/wrong_6.mp3";
 // Import audio - game over
 import GameOverSound from "./audio/gameover/gameover1.mp3";
 
+// Import audio - life down
+import LifeDownSound from "./audio/life-down/life-down.wav";
+
 // Export the assets
 
 export {
@@ -71,4 +74,5 @@ export {
   WrongSound5,
   WrongSound6,
   GameOverSound,
+  LifeDownSound,
 };
