@@ -5,9 +5,8 @@ import MenuModal from "../MenuModal/MenuModal";
 import useSoundEffects from "../../hooks/useSoundEffects";
 import { useGame } from "../../contexts/GameContext";
 import { FaFileWord } from "react-icons/fa";
-import { FaHeart } from "react-icons/fa";
-import { wordList } from "../../data/words";
 import { HeartIcon } from "../../assets/assets";
+import { VscDebugRestart } from "react-icons/vsc";
 import {
   GamepadIcon,
   TrophyIcon,
@@ -39,6 +38,7 @@ const PlayScreen = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [lives, setLives] = useState(3);
   const [isMounted, setIsMounted] = useState(false);
+  const [isGameOver, setIsGameOver] = useState(false);
 
   // Add this ref near other state declarations
   const isReducingLife = React.useRef(false);
@@ -80,7 +80,6 @@ const PlayScreen = () => {
             console.log("Time's up! Current word:", currentWord?.original);
 
             isReducingLife.current = true;
-            // Play life down sound immediately
             if (isSoundOn && lives > 1) {
               lifeDownSoundRef.current
                 .play()
@@ -89,7 +88,6 @@ const PlayScreen = () => {
                 );
             }
 
-            // Delay the life reduction to sync with sound
             setTimeout(() => {
               setLives((prevLives) => {
                 const newLives = prevLives - 1;
@@ -102,8 +100,8 @@ const PlayScreen = () => {
                   }, 0);
                 } else {
                   setIsTimerPaused(true);
+                  setIsGameOver(true); // Set game over state
                   isReducingLife.current = false;
-                  // Play game over sound only on last life
                   if (isSoundOn) {
                     gameOverSoundRef.current
                       .play()
@@ -114,7 +112,7 @@ const PlayScreen = () => {
                 }
                 return newLives;
               });
-            }, 250); // Small delay before reducing life
+            }, 250);
 
             return 0;
           }
@@ -323,6 +321,26 @@ const PlayScreen = () => {
     }
   };
 
+  // Add handlePlayAgain function
+  const handlePlayAgain = () => {
+    setIsGameOver(false);
+    setLives(3);
+    setScore(0);
+    setRound(1);
+    setTimeLeft(10);
+    setIsTimerPaused(false);
+    setGuess("");
+    startNewRound();
+  };
+
+  // Update the word box content based on game state
+  const renderWordContent = () => {
+    if (isGameOver) {
+      return "Game Over";
+    }
+    return currentWord ? currentWord.scrambled.toUpperCase() : "";
+  };
+
   return (
     <PlayScreenWrapper className="flex flex-col min-h-screen bg-purple-700 select-none">
       {/* Header */}
@@ -383,11 +401,8 @@ const PlayScreen = () => {
           </h1>
           <div className="p-6 mb-4 bg-purple-400 rounded-lg select-none word_box sm:p-8 md:p-10 sm:mb-6 md:mb-8">
             <div className="game-lives">{renderHearts()}</div>
-
             <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-white text-center tracking-widest drop-shadow-[3px_3px_0px_var(--tw-shadow-color)] shadow-violet-700 select-none">
-              {!transitioning && currentWord
-                ? currentWord.scrambled.toUpperCase()
-                : ""}
+              {renderWordContent()}
             </p>
           </div>
           <div className="flex flex-col space-y-4 input_wrapper sm:flex-row sm:space-x-4 sm:space-y-0">
@@ -395,42 +410,44 @@ const PlayScreen = () => {
               type="text"
               value={guess}
               onChange={(e) => {
-                // Only allow letters (no numbers or special characters)
                 const value = e.target.value.replace(/[^a-zA-Z]/g, "");
                 setGuess(value);
               }}
               onKeyPress={(e) =>
-                e.key === "Enter" && guess.trim() && handleSubmit()
+                e.key === "Enter" &&
+                guess.trim() &&
+                !isGameOver &&
+                handleSubmit()
               }
-              placeholder={
-                uploadStatus === "uploaded"
-                  ? "Custom words loaded..."
-                  : "Type your guess here..."
-              }
+              placeholder="Type your guess here..."
+              disabled={isGameOver || uploadStatus === "uploaded"}
               maxLength={currentWord ? currentWord.scrambled.length : 0}
               className={`p-3 w-full text-lg tracking-wider placeholder-purple-200 
                 text-white uppercase bg-purple-400 rounded-lg answer_field 
                 sm:text-xl md:text-2xl sm:p-4 focus:outline-none focus:ring-2 
-                focus:ring-purple-600 ${isInvalid ? "invalid" : ""} ${
-                uploadStatus === "uploaded" ? "disabled" : ""
-              }`}
+                focus:ring-purple-600 ${isInvalid ? "invalid" : ""} 
+                ${uploadStatus === "uploaded" || isGameOver ? "disabled" : ""}`}
             />
             <button
               className={`mx-auto text-lg tracking-wider text-white rounded-full shadow-lg submit_btn sm:text-xl md:text-2xl sm:mx-0 select-none
                 ${
-                  guess.trim()
+                  guess.trim() && !isGameOver
                     ? "bg-green-700 hover:bg-green-600 cursor-pointer"
                     : "bg-green-800 cursor-not-allowed opacity-75"
                 }`}
-              onMouseEnter={() => guess.trim() && soundOn && playHoverSound()}
-              onClick={() => guess.trim() && handleSubmit()}
-              disabled={!guess.trim() || uploadStatus === "uploaded"}
+              onMouseEnter={() =>
+                guess.trim() && !isGameOver && soundOn && playHoverSound()
+              }
+              onClick={() => guess.trim() && !isGameOver && handleSubmit()}
+              disabled={
+                !guess.trim() || isGameOver || uploadStatus === "uploaded"
+              }
             >
               <span
                 className={`block px-6 py-3 rounded-full -translate-y-1 submit_btn_text 
                 sm:px-8 md:px-10 sm:py-4 hover:bg-gradient-to-tl active:-translate-y-0 select-none
                 ${
-                  guess.trim()
+                  guess.trim() && !isGameOver
                     ? "bg-gradient-to-br from-green-400 via-green-500 to-green-600"
                     : "bg-gradient-to-br from-green-600 via-green-700 to-green-800"
                 }`}
@@ -441,54 +458,73 @@ const PlayScreen = () => {
           </div>
         </div>
 
-        <input
-          type="file"
-          id="upload-input"
-          accept=".txt"
-          style={{ display: "none" }}
-          onChange={handleUpload}
-          disabled={isProcessing}
-        />
-        <label htmlFor="upload-input" className="select-none">
-          {!showStartButton && (
-            <button
-              className={`mx-auto mt-6 text-lg text-white rounded-full shadow-lg select-none upload_btn sm:mt-8 md:mt-10 sm:text-xl md:text-2xl
-                ${uploadStatus === "uploaded" ? "bg-green-700" : ""}
-                ${uploadStatus === "invalid" ? "bg-red-500" : "bg-amber-700"}
-                ${isProcessing ? "cursor-not-allowed opacity-75" : ""}`}
-              onMouseEnter={!isProcessing && isSoundOn ? playHoverSound : null}
-              onClick={(e) => {
-                if (isProcessing) {
-                  e.preventDefault();
-                  return;
-                }
-                document.getElementById("upload-input").click();
-              }}
-            >
-              <span
-                className={`block inline-flex items-center px-6 py-3 w-full tracking-wider rounded-full -translate-y-1 select-none upload_btn_text sm:px-8 md:px-10 sm:py-4 
-                  ${
-                    !isProcessing
-                      ? "hover:bg-gradient-to-tl active:-translate-y-0"
-                      : ""
+        {isGameOver ? (
+          <button
+            className="mx-auto mt-6 text-lg text-white bg-green-700 rounded-full shadow-lg select-none play_again_btn sm:mt-8 md:mt-10 sm:text-xl md:text-2xl"
+            onClick={handlePlayAgain}
+            onMouseEnter={soundOn ? playHoverSound : null}
+          >
+            <span className="block inline-flex items-center px-6 py-3 w-full tracking-wider bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-full -translate-y-1 select-none play_again_btn_text sm:px-8 md:px-10 sm:py-4 hover:bg-gradient-to-tl active:-translate-y-0">
+              <VscDebugRestart className="mr-2 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+              Play Again
+            </span>
+          </button>
+        ) : (
+          <>
+            <input
+              type="file"
+              id="upload-input"
+              accept=".txt"
+              style={{ display: "none" }}
+              onChange={handleUpload}
+              disabled={isProcessing}
+            />
+            <label htmlFor="upload-input" className="select-none">
+              {!showStartButton && !isGameOver && (
+                <button
+                  className={`mx-auto mt-6 text-lg text-white rounded-full shadow-lg select-none upload_btn sm:mt-8 md:mt-10 sm:text-xl md:text-2xl
+                    ${uploadStatus === "uploaded" ? "bg-green-700" : ""}
+                    ${
+                      uploadStatus === "invalid" ? "bg-red-500" : "bg-amber-700"
+                    }
+                    ${isProcessing ? "cursor-not-allowed opacity-75" : ""}`}
+                  onMouseEnter={
+                    !isProcessing && isSoundOn ? playHoverSound : null
                   }
-                  ${
-                    uploadStatus === "uploaded"
-                      ? "bg-gradient-to-br from-green-400 via-green-500 to-green-600"
-                      : ""
-                  }
-                  ${
-                    uploadStatus === "invalid"
-                      ? "bg-gradient-to-br from-red-400 via-red-500 to-red-600"
-                      : "bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600"
-                  }`}
-              >
-                <RiFileUploadFill className="mr-2 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
-                {getButtonText()}
-              </span>
-            </button>
-          )}
-        </label>
+                  onClick={(e) => {
+                    if (isProcessing) {
+                      e.preventDefault();
+                      return;
+                    }
+                    document.getElementById("upload-input").click();
+                  }}
+                >
+                  <span
+                    className={`block inline-flex items-center px-6 py-3 w-full tracking-wider rounded-full -translate-y-1 select-none upload_btn_text sm:px-8 md:px-10 sm:py-4 
+                      ${
+                        !isProcessing
+                          ? "hover:bg-gradient-to-tl active:-translate-y-0"
+                          : ""
+                      }
+                      ${
+                        uploadStatus === "uploaded"
+                          ? "bg-gradient-to-br from-green-400 via-green-500 to-green-600"
+                          : ""
+                      }
+                      ${
+                        uploadStatus === "invalid"
+                          ? "bg-gradient-to-br from-red-400 via-red-500 to-red-600"
+                          : "bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600"
+                      }`}
+                  >
+                    <RiFileUploadFill className="mr-2 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+                    {getButtonText()}
+                  </span>
+                </button>
+              )}
+            </label>
+          </>
+        )}
 
         {showStartButton && (
           <button
