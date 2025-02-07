@@ -23,6 +23,7 @@ import {
 } from "../../utils/answerSounds";
 import { useMusic } from "../../contexts/MusicContext";
 import { validateWords } from "../../utils/wordValidator";
+import { FaPlayCircle } from "react-icons/fa";
 
 const PlayScreen = () => {
   // [Previous state declarations remain the same]
@@ -332,6 +333,18 @@ const PlayScreen = () => {
     }
   };
 
+  const handlePlayAgain = () => {
+    setLives(3);
+    setScore(0);
+    setRound(1);
+    setGuess("");
+    setTimeLeft(10);
+    setUploadStatus("");
+    setShowStartButton(false);
+    setIsTimerPaused(false);
+    startNewRound();
+  };
+
   return (
     <PlayScreenWrapper className="flex flex-col min-h-screen bg-purple-700 select-none">
       {/* Header */}
@@ -408,7 +421,6 @@ const PlayScreen = () => {
               type="text"
               value={guess}
               onChange={(e) => {
-                // Only allow letters (no numbers or special characters)
                 const value = e.target.value.replace(/[^a-zA-Z]/g, "");
                 setGuess(value);
               }}
@@ -416,7 +428,9 @@ const PlayScreen = () => {
                 e.key === "Enter" && guess.trim() && handleSubmit()
               }
               placeholder={
-                uploadStatus === "uploaded"
+                lives === 0
+                  ? "ABCDE...✍️"
+                  : uploadStatus === "uploaded"
                   ? "Custom words loaded..."
                   : "Type your guess here..."
               }
@@ -425,14 +439,18 @@ const PlayScreen = () => {
                 text-white uppercase bg-purple-400 rounded-lg answer_field 
                 sm:text-xl md:text-2xl sm:p-4 focus:outline-none focus:ring-2 
                 focus:ring-purple-600 ${isInvalid ? "invalid" : ""} ${
-                uploadStatus === "uploaded" || showStartButton ? "disabled" : ""
+                uploadStatus === "uploaded" || showStartButton || lives === 0
+                  ? "disabled"
+                  : ""
               }`}
-              disabled={uploadStatus === "uploaded" || showStartButton}
+              disabled={
+                uploadStatus === "uploaded" || showStartButton || lives === 0
+              }
             />
             <button
               className={`mx-auto text-lg tracking-wider text-white rounded-full shadow-lg submit_btn sm:text-xl md:text-2xl sm:mx-0 select-none
                 ${
-                  uploadStatus === "uploaded" || showStartButton
+                  uploadStatus === "uploaded" || showStartButton || lives === 0
                     ? "bg-green-800 cursor-not-allowed opacity-75"
                     : guess.trim()
                     ? "bg-green-700 hover:bg-green-600 cursor-pointer"
@@ -441,7 +459,10 @@ const PlayScreen = () => {
               onMouseEnter={() => guess.trim() && soundOn && playHoverSound()}
               onClick={() => guess.trim() && handleSubmit()}
               disabled={
-                !guess.trim() || uploadStatus === "uploaded" || showStartButton
+                !guess.trim() ||
+                uploadStatus === "uploaded" ||
+                showStartButton ||
+                lives === 0
               }
             >
               <span
@@ -471,50 +492,70 @@ const PlayScreen = () => {
         />
         <label htmlFor="upload-input" className="select-none">
           {!showStartButton && (
-            <button
-              className={`mx-auto mt-6 text-lg text-white rounded-full shadow-lg select-none upload_btn sm:mt-8 md:mt-10 sm:text-xl md:text-2xl
-                ${uploadStatus === "uploaded" ? "bg-green-700" : ""}
-                ${uploadStatus === "invalid" ? "bg-red-500" : "bg-amber-700"}
-                ${
-                  isProcessing || uploadStatus === "invalid"
-                    ? "cursor-not-allowed opacity-75"
-                    : ""
-                }`}
-              onMouseEnter={
-                !isProcessing && uploadStatus !== "invalid" && isSoundOn
-                  ? playHoverSound
-                  : null
-              }
-              onClick={(e) => {
-                if (isProcessing || uploadStatus === "invalid") {
-                  e.preventDefault();
-                  return;
-                }
-                document.getElementById("upload-input").click();
-              }}
-            >
-              <span
-                className={`block inline-flex items-center px-6 py-3 w-full tracking-wider rounded-full -translate-y-1 select-none upload_btn_text sm:px-8 md:px-10 sm:py-4 
-                  ${
-                    !isProcessing
-                      ? "hover:bg-gradient-to-tl active:-translate-y-0"
-                      : ""
+            <>
+              {lives === 0 ? (
+                <button
+                  className="mx-auto mt-6 text-lg text-white bg-green-700 rounded-full shadow-lg select-none play_again_btn sm:mt-8 md:mt-10 sm:text-xl md:text-2xl"
+                  onClick={() => {
+                    if (isSoundOn) playClickSound();
+                    handlePlayAgain();
+                  }}
+                  onMouseEnter={isSoundOn ? playHoverSound : null}
+                >
+                  <span className="block inline-flex items-center px-6 py-3 w-full tracking-wider bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-full -translate-y-1 select-none play_again_btn_text sm:px-8 md:px-10 sm:py-4 hover:bg-gradient-to-tl active:-translate-y-0">
+                    <FaPlayCircle className="mr-2 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+                    Play Again
+                  </span>
+                </button>
+              ) : (
+                <button
+                  className={`mx-auto mt-6 text-lg text-white rounded-full shadow-lg select-none upload_btn sm:mt-8 md:mt-10 sm:text-xl md:text-2xl
+                    ${uploadStatus === "uploaded" ? "bg-green-700" : ""}
+                    ${
+                      uploadStatus === "invalid" ? "bg-red-500" : "bg-amber-700"
+                    }
+                    ${
+                      isProcessing || uploadStatus === "invalid"
+                        ? "cursor-not-allowed opacity-75"
+                        : ""
+                    }`}
+                  onMouseEnter={
+                    !isProcessing && uploadStatus !== "invalid" && isSoundOn
+                      ? playHoverSound
+                      : null
                   }
-                  ${
-                    uploadStatus === "uploaded"
-                      ? "bg-gradient-to-br from-green-400 via-green-500 to-green-600"
-                      : ""
-                  }
-                  ${
-                    uploadStatus === "invalid"
-                      ? "bg-gradient-to-br from-red-400 via-red-500 to-red-600"
-                      : "bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600"
-                  }`}
-              >
-                <RiFileUploadFill className="mr-2 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
-                {getButtonText()}
-              </span>
-            </button>
+                  onClick={(e) => {
+                    if (isProcessing || uploadStatus === "invalid") {
+                      e.preventDefault();
+                      return;
+                    }
+                    document.getElementById("upload-input").click();
+                  }}
+                >
+                  <span
+                    className={`block inline-flex items-center px-6 py-3 w-full tracking-wider rounded-full -translate-y-1 select-none upload_btn_text sm:px-8 md:px-10 sm:py-4 
+                      ${
+                        !isProcessing
+                          ? "hover:bg-gradient-to-tl active:-translate-y-0"
+                          : ""
+                      }
+                      ${
+                        uploadStatus === "uploaded"
+                          ? "bg-gradient-to-br from-green-400 via-green-500 to-green-600"
+                          : ""
+                      }
+                      ${
+                        uploadStatus === "invalid"
+                          ? "bg-gradient-to-br from-red-400 via-red-500 to-red-600"
+                          : "bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600"
+                      }`}
+                  >
+                    <RiFileUploadFill className="mr-2 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+                    {getButtonText()}
+                  </span>
+                </button>
+              )}
+            </>
           )}
         </label>
 
