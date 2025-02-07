@@ -25,8 +25,9 @@ export const GameProvider = ({ children }) => {
     .sort((a, b) => a - b);
 
   const getNextWord = () => {
-    // Check if we have custom words and we're in infinite mode
+    // Check if we have custom words
     if (Object.keys(userWords).length > 0) {
+      // For custom words mode (infinite rounds)
       try {
         // Get all available lengths from user uploaded words
         const availableLengths = Object.keys(userWords)
@@ -98,11 +99,12 @@ Remaining Word List: [${unusedAllWords.map((w) => w.original).join(", ")}]
       }
     }
 
-    // Default word list mode only if no custom words available
+    // Default word list mode
     try {
       const availableWords = getWordsByLength(currentWordLength.current);
       if (!availableWords || availableWords.length === 0) return null;
 
+      // Filter out used words
       const unusedWords = availableWords.filter((wordObj) => {
         const original = wordObj.original || wordObj;
         return !usedWords.has(original);
@@ -121,20 +123,31 @@ Used Words List: [${usedWordsArray.join(", ")}]
 Remaining Words: ${unusedWords.length}
 Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
 ========================================`;
-
         console.log(debugInfo);
       }
 
-      if (unusedWords.length === 0) {
-        const nextLength =
-          validWordLengths[
-            validWordLengths.indexOf(currentWordLength.current) + 1
-          ];
-        if (!nextLength) {
-          return null;
+      // Check if we need to move to next round/category
+      if (unusedWords.length === 0 || usedWordsArray.length >= 10) {
+        const currentIndex = validWordLengths.indexOf(
+          currentWordLength.current
+        );
+        const nextLength = validWordLengths[currentIndex + 1];
+
+        if (nextLength) {
+          // Store current length before updating
+          const previousLength = currentWordLength.current;
+          currentWordLength.current = nextLength;
+          setUsedWords(new Set()); // Reset used words for new category
+
+          // Only increment round if this is our first time moving to this length
+          if (previousLength !== nextLength) {
+            setRound(currentIndex + 2); // Set round directly based on the category index
+          }
+
+          return getNextWord(); // Get word from new category
+        } else {
+          return null; // Game complete
         }
-        currentWordLength.current = nextLength;
-        return getNextWord();
       }
 
       const randomWord =
