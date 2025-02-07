@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PlayScreenWrapper from "./PlayScreenWrapper";
 import MenuModal from "../MenuModal/MenuModal";
@@ -19,6 +19,7 @@ import { useMusic } from "../../contexts/MusicContext";
 import { validateWords } from "../../utils/wordValidator";
 
 const PlayScreen = () => {
+  // [Previous state declarations remain the same]
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
   const [guess, setGuess] = useState("");
@@ -30,6 +31,13 @@ const PlayScreen = () => {
   const [transitioning, setTransitioning] = useState(false);
   const [validationStatus, setValidationStatus] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [lives, setLives] = useState(3);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Add this ref near other state declarations
+  const isReducingLife = React.useRef(false);
+
+  // [Previous hooks and context remain the same]
   const { playHoverSound, playClickSound } = useSoundEffects();
   const {
     round,
@@ -45,25 +53,77 @@ const PlayScreen = () => {
   const { isSoundOn } = useMusic();
   const navigate = useNavigate();
 
-  // Initialize game on mount
+  // Remove the useLayoutEffect initialization
   useEffect(() => {
-    startNewRound();
-  }, []);
+    if (!currentWord) {
+      startNewRound();
+      setTimeLeft(10);
+    }
+  }, []); // Run once on mount
 
-  // Timer effect
+  // Updated Timer effect with improved lives handling
   useEffect(() => {
     let timer;
     if (!isTimerPaused) {
       timer = setInterval(() => {
-        setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+        setTimeLeft((prevTime) => {
+          if (prevTime <= 1 && !isReducingLife.current) {
+            // When time runs out, only log the answer
+            console.log("Time's up! Current word:", currentWord?.original);
+
+            isReducingLife.current = true;
+            // Reduce lives first
+            setLives((prevLives) => {
+              const newLives = prevLives - 1;
+              if (newLives > 0) {
+                // Only start new round after lives are reduced
+                setTimeout(() => {
+                  startNewRound();
+                  setTimeLeft(10);
+                  setGuess("");
+                  isReducingLife.current = false;
+                }, 0);
+              } else {
+                setIsTimerPaused(true);
+                isReducingLife.current = false;
+              }
+              return newLives;
+            });
+
+            return 0;
+          }
+          return prevTime - 1;
+        });
       }, 1000);
     }
-    return () => clearInterval(timer);
-  }, [isTimerPaused]);
+
+    return () => {
+      clearInterval(timer);
+      isReducingLife.current = false;
+    };
+  }, [isTimerPaused, currentWord]);
+
+  // Updated renderHearts function to reduce from left to right
+  const renderHearts = () => {
+    return Array(3)
+      .fill(null)
+      .map((_, index) => (
+        <img
+          key={index}
+          src={HeartIcon}
+          alt="Heart"
+          className={`game-life-icon ${index >= lives ? "lost" : ""}`}
+          style={{
+            opacity: index >= lives ? 0.4 : 1,
+            transition: "opacity 0.3s ease",
+          }}
+        />
+      ));
+  };
 
   // Reset timer when starting new round
   useEffect(() => {
-    setTimeLeft(60);
+    setTimeLeft(10);
   }, [round]);
 
   const handleSubmit = () => {
@@ -72,7 +132,7 @@ const PlayScreen = () => {
       if (isSoundOn) playRandomCorrectSound();
       setGuess("");
       startNewRound(); // Immediately start a new round
-      setTimeLeft(60); // Reset timer immediately
+      setTimeLeft(10); // Changed from 60 to 10
     } else {
       if (isSoundOn) playRandomWrongSound();
       setIsInvalid(true);
@@ -215,8 +275,9 @@ const PlayScreen = () => {
 
   const handleStartGame = () => {
     setShowStartButton(false);
-    setTimeLeft(60);
+    setTimeLeft(10);
     setScore(0);
+    setLives(3); // Reset lives to 3
     setIsTimerPaused(false);
 
     // Set round to infinite only when starting game with custom words
@@ -295,14 +356,7 @@ const PlayScreen = () => {
             Guess the Word
           </h1>
           <div className="p-6 mb-4 bg-purple-400 rounded-lg select-none word_box sm:p-8 md:p-10 sm:mb-6 md:mb-8">
-            <div className="game-lives">
-              {/* <FaHeart className="game-life-icon" />
-              <FaHeart className="game-life-icon" />
-              <FaHeart className="game-life-icon" /> */}
-              <img src={HeartIcon} alt="Heart" className="game-life-icon" />
-              <img src={HeartIcon} alt="Heart" className="game-life-icon" />
-              <img src={HeartIcon} alt="Heart" className="game-life-icon" />
-            </div>
+            <div className="game-lives">{renderHearts()}</div>
 
             <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-white text-center tracking-widest drop-shadow-[3px_3px_0px_var(--tw-shadow-color)] shadow-violet-700 select-none">
               {!transitioning && currentWord
