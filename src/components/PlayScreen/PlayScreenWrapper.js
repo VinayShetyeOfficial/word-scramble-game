@@ -54,8 +54,6 @@ const PlayScreenWrapper = styled.div`
       drop-shadow(0 0 6px #a855f7);
 
     &.lost {
-      color: #666;
-      opacity: 0.5;
       transform: scale(0.9);
       filter: none;
     }
