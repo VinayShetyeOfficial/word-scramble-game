@@ -257,6 +257,7 @@ const PlayScreen = () => {
         const success = await uploadWords(processedWords);
 
         if (success) {
+          setGuess(""); // Clear the text input when file upload starts
           setUploadStatus("uploaded");
           setIsTimerPaused(true);
           event.target.value = ""; // Clear the file input
@@ -270,7 +271,6 @@ const PlayScreen = () => {
             setShowStartButton(true);
             setValidationStatus(null);
             setIsProcessing(false);
-            setGuess(""); // Clear the text input when file upload starts
           }, 1500);
         } else {
           setUploadStatus("error");
