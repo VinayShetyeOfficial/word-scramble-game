@@ -10,10 +10,10 @@ const shuffleArray = (array) => {
 export const wordList = {
   4: shuffleArray([
     { original: "GAME", scrambled: "MAGE" },
-    // { original: "PLAY", scrambled: "LAYP" },
-    // { original: "WORD", scrambled: "ORDW" },
-    // { original: "TEXT", scrambled: "XETT" },
-    // { original: "CODE", scrambled: "ODEC" },
+    { original: "PLAY", scrambled: "LAYP" },
+    { original: "WORD", scrambled: "ORDW" },
+    { original: "TEXT", scrambled: "XETT" },
+    { original: "CODE", scrambled: "ODEC" },
     // { original: "BOOK", scrambled: "OKBO" },
     // { original: "TREE", scrambled: "ERET" },
     // { original: "FISH", scrambled: "ISHF" },
