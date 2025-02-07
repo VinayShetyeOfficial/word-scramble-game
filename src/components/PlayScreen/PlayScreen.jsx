@@ -5,7 +5,9 @@ import MenuModal from "../MenuModal/MenuModal";
 import useSoundEffects from "../../hooks/useSoundEffects";
 import { useGame } from "../../contexts/GameContext";
 import { FaFileWord } from "react-icons/fa";
+import { FaHeart } from "react-icons/fa";
 import { wordList } from "../../data/words";
+import { HeartIcon } from "../../assets/assets";
 import { GamepadIcon, TrophyIcon, ClockIcon } from "../../assets/assets";
 import { TfiMenu } from "react-icons/tfi";
 import { RiFileUploadFill } from "react-icons/ri";
@@ -216,16 +218,16 @@ const PlayScreen = () => {
     setTimeLeft(60);
     setScore(0);
     setIsTimerPaused(false);
-    
+
     // Set round to infinite only when starting game with custom words
     if (Object.keys(userWords).length > 0) {
       setRound("∞");
     } else {
       setRound(1); // Reset to 1 for default word list
     }
-    
+
     startNewRound();
-    
+
     // Re-enable the input when game starts
     const inputElement = document.querySelector('input[type="text"]');
     if (inputElement) {
@@ -249,7 +251,7 @@ const PlayScreen = () => {
           </span>
         </button>
         <div className="flex items-center justify-between px-0.5 py-2 text-xl game_bar sm:px-4 md:px-6 sm:py-3 md:py-4 sm:text-md md:text-xl lg:text-2xl">
-          <div className="flex items-center justify-center whitespace-nowrap pr-3 border-r border-purple-300/50 drop-shadow-[2px_2px_0px_var(--tw-shadow-color)] sm:pr-4 md:pr-6 sm:drop-shadow-[3px_2px_0px_var(--tw-shadow-color)] shadow-violet-900">
+          <div className="flex justify-center items-center pr-3 whitespace-nowrap border-r border-purple-300/50">
             <img
               src={GamepadIcon}
               alt="Gamepad"
@@ -259,7 +261,7 @@ const PlayScreen = () => {
               <span className="label">Round:</span> {round}
             </span>
           </div>
-          <div className="flex items-center justify-center whitespace-nowrap px-3 border-r border-purple-300/50 drop-shadow-[2px_2px_0px_var(--tw-shadow-color)] sm:px-4 md:px-6 sm:drop-shadow-[3px_2px_0px_var(--tw-shadow-color)] shadow-violet-900">
+          <div className="flex justify-center items-center px-3 whitespace-nowrap border-r border-purple-300/50">
             <img
               src={TrophyIcon}
               alt="Trophy"
@@ -269,7 +271,7 @@ const PlayScreen = () => {
               <span className="label">Score:</span> {score}
             </span>
           </div>
-          <div className="flex items-center justify-center whitespace-nowrap pl-3 drop-shadow-[2px_2px_0px_var(--tw-shadow-color)] sm:pl-4 md:pl-6 sm:drop-shadow-[3px_2px_0px_var(--tw-shadow-color)] shadow-violet-900">
+          <div className="flex justify-center items-center pl-3 whitespace-nowrap">
             <img
               src={ClockIcon}
               alt="Clock"
@@ -293,6 +295,15 @@ const PlayScreen = () => {
             Guess the Word
           </h1>
           <div className="p-6 mb-4 bg-purple-400 rounded-lg select-none word_box sm:p-8 md:p-10 sm:mb-6 md:mb-8">
+            <div className="game-lives">
+              {/* <FaHeart className="game-life-icon" />
+              <FaHeart className="game-life-icon" />
+              <FaHeart className="game-life-icon" /> */}
+              <img src={HeartIcon} alt="Heart" className="game-life-icon" />
+              <img src={HeartIcon} alt="Heart" className="game-life-icon" />
+              <img src={HeartIcon} alt="Heart" className="game-life-icon" />
+            </div>
+
             <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-white text-center tracking-widest drop-shadow-[3px_3px_0px_var(--tw-shadow-color)] shadow-violet-700 select-none">
               {!transitioning && currentWord
                 ? currentWord.scrambled.toUpperCase()
