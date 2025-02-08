@@ -23,6 +23,8 @@ const App = () => {
               <Route path="/playScreen" element={<PlayScreen />} />
               <Route path="/instructions" element={<Instructions />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
+
+              {/* <Route path="/" element={<PlayScreen />} /> */}
             </Routes>
           </RouteGuard>
         </Router>
