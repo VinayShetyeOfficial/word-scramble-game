@@ -5,8 +5,6 @@ import MenuModal from "../MenuModal/MenuModal";
 import useSoundEffects from "../../hooks/useSoundEffects";
 import { useGame } from "../../contexts/GameContext";
 import { FaFileWord } from "react-icons/fa";
-import { FaHeart } from "react-icons/fa";
-import { wordList } from "../../data/words";
 import { HeartIcon } from "../../assets/assets";
 import {
   GamepadIcon,
