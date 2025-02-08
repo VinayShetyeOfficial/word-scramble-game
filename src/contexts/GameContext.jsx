@@ -76,8 +76,6 @@ Remaining Word List: [${unusedAllWords.map((w) => w.original).join(", ")}]
             ];
           currentWordLength.current = randomLength;
           setUsedWords(new Set()); // reset used words for new category
-          // Optionally update round here if needed
-          setRound(availableLengths.indexOf(randomLength) + 1);
           const unusedWordsInNewLength = userWords[randomLength].filter(
             (word) => !usedWords.has(word.original)
           );
