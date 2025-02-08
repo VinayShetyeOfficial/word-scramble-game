@@ -56,6 +56,7 @@ const PlayScreen = () => {
     setRound,
     setScore,
     userWords,
+    resetGame,
   } = useGame();
   const { isSoundOn } = useMusic();
   const navigate = useNavigate();
@@ -67,7 +68,7 @@ const PlayScreen = () => {
   useEffect(() => {
     if (!currentWord) {
       startNewRound();
-      setTimeLeft(10);
+      setTimeLeft(60);
     }
   }, []); // Run once on mount
 
@@ -97,7 +98,7 @@ const PlayScreen = () => {
                 if (newLives > 0) {
                   setTimeout(() => {
                     startNewRound();
-                    setTimeLeft(10);
+                    setTimeLeft(60);
                     setGuess("");
                     isReducingLife.current = false;
                   }, 0);
@@ -150,7 +151,7 @@ const PlayScreen = () => {
 
   // Reset timer when starting new round
   useEffect(() => {
-    setTimeLeft(10);
+    setTimeLeft(60);
   }, [round]);
 
   const handleSubmit = () => {
@@ -159,7 +160,7 @@ const PlayScreen = () => {
       if (isSoundOn) playRandomCorrectSound();
       setGuess("");
       startNewRound(); // Immediately start a new round
-      setTimeLeft(10); // Changed from 60 to 10
+      setTimeLeft(60); // Changed from 60 to 10
     } else {
       if (isSoundOn) playRandomWrongSound();
       setIsInvalid(true);
@@ -311,7 +312,7 @@ const PlayScreen = () => {
 
   const handleStartGame = () => {
     setShowStartButton(false);
-    setTimeLeft(10);
+    setTimeLeft(60);
     setScore(0);
     setLives(3); // Reset lives to 3
     setIsTimerPaused(false);
@@ -334,15 +335,18 @@ const PlayScreen = () => {
   };
 
   const handlePlayAgain = () => {
+    if (isSoundOn) playClickSound();
     setLives(3);
-    setScore(0);
-    setRound(1);
+    setTimeLeft(60);
     setGuess("");
-    setTimeLeft(10);
+    setIsTimerPaused(false);
     setUploadStatus("");
     setShowStartButton(false);
-    setIsTimerPaused(false);
-    startNewRound();
+    setIsInvalid(false);
+    setValidationStatus(null);
+    setIsProcessing(false);
+    resetGame();
+    // No immediate call to startNewRound()
   };
 
   return (
