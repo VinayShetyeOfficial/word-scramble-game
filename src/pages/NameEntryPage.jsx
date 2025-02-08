@@ -20,9 +20,8 @@ const NameEntryPage = () => {
       return false;
     }
 
-    // Check if contains only alphanumeric and underscore
-    // This regex allows letters, numbers, and underscores
-    const validCharacters = /^[a-zA-Z0-9_]+$/;
+    // Allow letters, numbers, underscores and spaces
+    const validCharacters = /^[a-zA-Z0-9_ ]+$/;
     if (!validCharacters.test(trimmedName)) {
       return false;
     }
@@ -62,11 +61,10 @@ const NameEntryPage = () => {
     }
   };
 
-  // Prevent invalid characters while typing
+  // Allow letters, numbers, underscores, and spaces while typing
   const handleNameChange = (e) => {
     const value = e.target.value;
-    // Only allow letters, numbers, and underscores
-    if (value === "" || /^[a-zA-Z0-9_]*$/.test(value)) {
+    if (value === "" || /^[a-zA-Z0-9_ ]*$/.test(value)) {
       setName(value);
     }
   };
@@ -82,7 +80,7 @@ const NameEntryPage = () => {
           value={name}
           onChange={handleNameChange}
           onKeyPress={handleKeyPress}
-          placeholder="Eg. Joe123"
+          placeholder="Eg. Joe Doe"
           maxLength={15}
           className={`name_field text-xl sm:text-2xl md:text-3xl  
              w-[240px] sm:w-[320px] md:w-[380px] lg:w-[450px] 
@@ -95,8 +93,7 @@ const NameEntryPage = () => {
 
         <button
           className={`btn_start_game mt-2 sm:mt-3 md:mt-4 select-none bg-blue-700 text-2xl sm:text-3xl md:text-4xl mx-auto text-white rounded-full shadow-lg transform transition-transform duration-1000 ${
-            animate ? "scale-15" : ""
-          }`}
+            animate ? "scale-15" : ""}`}
           onClick={handleStartGame}
           onMouseEnter={playHoverSound} // Play hover sound
         >
