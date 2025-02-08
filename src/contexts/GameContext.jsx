@@ -15,17 +15,18 @@ export const GameProvider = ({ children }) => {
   const [round, setRound] = useState(1);
   const [score, setScore] = useState(0);
   const [currentWord, setCurrentWord] = useState(null);
-  const [userWords, setUserWords] = useState({});
+  // Used words is kept as state here
   const [usedWords, setUsedWords] = useState(new Set());
+  const [userWords, setUserWords] = useState({});
   const currentWordLength = useRef(4);
 
-  // Dynamically determine valid word lengths from the default word list
+  // Get valid word lengths from the default word list (keys sorted ascending)
   const validWordLengths = Object.keys(wordList)
     .map(Number)
     .sort((a, b) => a - b);
 
   const getNextWord = () => {
-    // If custom words have been uploaded, use them in "infinite" mode
+    // CUSTOM WORDS MODE
     if (Object.keys(userWords).length > 0) {
       try {
         const availableLengths = Object.keys(userWords)
@@ -33,14 +34,14 @@ export const GameProvider = ({ children }) => {
           .sort((a, b) => a - b);
         if (availableLengths.length === 0) return null;
 
-        // --- Custom Words Debug Information ---
+        // Debug info for custom mode (optional)
         const usedWordsArray = Array.from(usedWords);
         const allWords = Object.values(userWords).flat();
         const unusedAllWords = allWords.filter(
           (word) => !usedWords.has(word.original)
         );
         if (usedWordsArray.length > 0) {
-          const debugInfo = `
+          console.log(`
 ========================================
 Custom Words Mode
 ========================================
@@ -49,36 +50,34 @@ Used Words: ${usedWordsArray.length}
 Used Words List: [${usedWordsArray.join(", ")}]
 Remaining Words: ${unusedAllWords.length}
 Remaining Word List: [${unusedAllWords.map((w) => w.original).join(", ")}]
-========================================`;
-          console.log(debugInfo);
+========================================`);
         }
-        // ----------------------------------------
 
-        // Get words for the current word length category and filter out already used words
         const currentLengthWords = userWords[currentWordLength.current] || [];
         const unusedWords = currentLengthWords.filter(
           (word) => !usedWords.has(word.original)
         );
 
         if (unusedWords.length === 0) {
-          // Look for another word length that still has unused words
           const availableLengthsWithWords = availableLengths.filter((length) =>
             userWords[length].some((word) => !usedWords.has(word.original))
           );
 
           if (availableLengthsWithWords.length === 0) {
-            // All words have been used, reset usedWords and continue
+            // All custom words used: reset usedWords and start over
             setUsedWords(new Set());
             currentWordLength.current = availableLengths[0];
             return userWords[currentWordLength.current][0];
           }
 
-          // Set new random length
           const randomLength =
             availableLengthsWithWords[
               Math.floor(Math.random() * availableLengthsWithWords.length)
             ];
           currentWordLength.current = randomLength;
+          setUsedWords(new Set()); // reset used words for new category
+          // Optionally update round here if needed
+          setRound(availableLengths.indexOf(randomLength) + 1);
           const unusedWordsInNewLength = userWords[randomLength].filter(
             (word) => !usedWords.has(word.original)
           );
@@ -87,7 +86,6 @@ Remaining Word List: [${unusedAllWords.map((w) => w.original).join(", ")}]
           ];
         }
 
-        // Return a random unused word from the current category
         return unusedWords[Math.floor(Math.random() * unusedWords.length)];
       } catch (error) {
         console.error("Error in custom words mode:", error);
@@ -95,7 +93,7 @@ Remaining Word List: [${unusedAllWords.map((w) => w.original).join(", ")}]
       }
     }
 
-    // Default mode: use the default word list based on currentWordLength
+    // DEFAULT MODE
     try {
       const availableWords = getWordsByLength(currentWordLength.current);
       if (!availableWords || availableWords.length === 0) return null;
@@ -105,10 +103,10 @@ Remaining Word List: [${unusedAllWords.map((w) => w.original).join(", ")}]
         return !usedWords.has(original);
       });
 
-      // Debug info printed to the browser console for default mode
+      // Debug info for default mode
       const usedWordsArray = Array.from(usedWords);
       if (usedWordsArray.length > 0) {
-        const debugInfo = `
+        console.log(`
 ========================================
 Default Mode - ${currentWordLength.current}-Letter Words
 ========================================
@@ -117,30 +115,25 @@ Used Words: ${usedWordsArray.length}
 Used Words List: [${usedWordsArray.join(", ")}]
 Remaining Words: ${unusedWords.length}
 Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
-========================================`;
-        console.log(debugInfo);
+========================================`);
       }
 
-      // If there are no unused words left (or 10 words have been used), try the next word length category
-      if (unusedWords.length === 0 || usedWordsArray.length >= 10) {
+      // IMPORTANT CHANGE: Remove "|| usedWordsArray.length >= 10"
+      if (unusedWords.length === 0) {
         const currentIndex = validWordLengths.indexOf(
           currentWordLength.current
         );
         const nextLength = validWordLengths[currentIndex + 1];
-
         if (nextLength) {
           const previousLength = currentWordLength.current;
           currentWordLength.current = nextLength;
-          setUsedWords(new Set()); // Reset used words for the new category
-
-          // Increment round only when moving to a new category
+          setUsedWords(new Set()); // reset used words for new category
           if (previousLength !== nextLength) {
             setRound(currentIndex + 2);
           }
-
           return getNextWord();
         } else {
-          return null; // All categories have been exhausted
+          return null; // Game complete
         }
       }
 
@@ -149,7 +142,6 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
       if (randomWord && randomWord.original && randomWord.scrambled) {
         return randomWord;
       }
-
       const originalWord = randomWord.original || randomWord;
       return {
         original: originalWord,
@@ -168,6 +160,7 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
     try {
       const nextWord = getNextWord();
       if (nextWord) {
+        // Add the chosen word to usedWords and update currentWord
         const newUsedWords = new Set(usedWords);
         newUsedWords.add(nextWord.original);
         setUsedWords(newUsedWords);
@@ -180,17 +173,12 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
 
   const submitGuess = (guess) => {
     if (!currentWord) return false;
-
     if (guess.toLowerCase() === currentWord.original.toLowerCase()) {
-      // Calculate points: (word length - 2)
       const points = currentWord.original.length - 2;
       setScore((prev) => prev + points);
-
-      // Update used words and fetch the next word
       const newUsedWords = new Set(usedWords);
       newUsedWords.add(currentWord.original);
       setUsedWords(newUsedWords);
-
       startNewRound();
       return true;
     }
@@ -199,19 +187,14 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
 
   const uploadWords = async (validWords) => {
     try {
-      // When switching to custom words mode, clear previous used words
       setUsedWords(new Set());
-
-      // Group the uploaded words by their length
       const wordsByLength = {};
       validWords.forEach((wordObj) => {
         const word = wordObj.original;
         const length = word.length;
-
         if (!wordsByLength[length]) {
           wordsByLength[length] = [];
         }
-
         let scrambled;
         do {
           scrambled = word
@@ -219,21 +202,13 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
             .sort(() => Math.random() - 0.5)
             .join("");
         } while (scrambled === word);
-
         wordsByLength[length].push({
           original: word,
           scrambled: scrambled,
         });
       });
-
       setUserWords(wordsByLength);
-      console.log("Valid words:", validWords);
-      console.log("Words grouped by length:", wordsByLength);
-
-      // Save custom words to localStorage for persistence
       localStorage.setItem("userWords", JSON.stringify(wordsByLength));
-      console.log("Saved to localStorage:", JSON.stringify(wordsByLength));
-
       return true;
     } catch (error) {
       console.error("Error in uploadWords:", error);
@@ -241,35 +216,29 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
     }
   };
 
-  // Fully updated resetGame function: clears all state and resets to 4-letter words
   const resetGame = () => {
-    // Reset game state
     setRound(1);
     setScore(0);
+    setCurrentWord(null);
     setUsedWords(new Set());
     setUserWords({});
     currentWordLength.current = validWordLengths[0];
     localStorage.removeItem("userWords");
-
-    // Immediately initialize the first word from the default (4-letter) list.
-    // This avoids the situation where the timer sees a null/undefined currentWord.
+    // Immediately initialize the first word from the default list.
     const defaultWords = getWordsByLength(validWordLengths[0]);
     if (defaultWords && defaultWords.length > 0) {
-      // Pick a random word from the available 4-letter words.
       const initialWord =
         defaultWords[Math.floor(Math.random() * defaultWords.length)];
       setCurrentWord(initialWord);
-      // Initialize usedWords with the initial word's original value.
       setUsedWords(new Set([initialWord.original]));
     } else {
-      // If for any reason there are no words, set currentWord to null.
       setCurrentWord(null);
     }
   };
 
   useEffect(() => {
     try {
-      // Initialize current word length based on mode
+      // Initialize word length based on mode
       if (round === "∞" && Object.keys(userWords).length > 0) {
         const availableLengths = Object.keys(userWords)
           .map(Number)
@@ -278,8 +247,6 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
       } else {
         currentWordLength.current = validWordLengths[0];
       }
-
-      // Set the first word if none is set yet
       if (!currentWord) {
         const firstWord = getNextWord();
         if (firstWord) {
