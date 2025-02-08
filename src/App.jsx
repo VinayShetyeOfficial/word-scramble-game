@@ -17,14 +17,12 @@ const App = () => {
         <Router>
           <RouteGuard>
             <Routes>
-              {/* <Route path="/" element={<HomeScreen />} />
+              <Route path="/" element={<HomeScreen />} />
               <Route path="/enter-name" element={<NameEntryPage />} />
               <Route path="/load" element={<LoadingScreen />} />
               <Route path="/playScreen" element={<PlayScreen />} />
               <Route path="/instructions" element={<Instructions />} />
-              <Route path="/leaderboard" element={<Leaderboard />} /> */}
-
-              <Route path="/" element={<PlayScreen />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
             </Routes>
           </RouteGuard>
         </Router>
