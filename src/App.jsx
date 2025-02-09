@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import RouteGuard from "./components/RouteGuard/RouteGuard";
 import HomeScreen from "./components/HomeScreen/HomeScreen";
@@ -11,6 +11,15 @@ import { MusicProvider } from "./contexts/MusicContext";
 import { GameProvider } from "./contexts/GameContext";
 
 const App = () => {
+  useEffect(() => {
+    // Clear any existing user data when app first loads
+    if (window.location.pathname === "/") {
+      localStorage.removeItem("userId");
+      localStorage.removeItem("playerName");
+      localStorage.removeItem("username");
+    }
+  }, []);
+
   return (
     <GameProvider>
       <MusicProvider>
@@ -23,8 +32,6 @@ const App = () => {
               <Route path="/playScreen" element={<PlayScreen />} />
               <Route path="/instructions" element={<Instructions />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
-
-              {/* <Route path="/" element={<PlayScreen />} /> */}
             </Routes>
           </RouteGuard>
         </Router>
