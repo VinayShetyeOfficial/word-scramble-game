@@ -6,8 +6,6 @@ import MenuIcon from "./images/icons/hamburger_menu.png";
 import UploadIcon from "./images/icons/upload.png";
 import CloseIcon from "./images/icons/close.png";
 import HeartIcon from "./images/icons/heart.png";
-import LeaderboardIcon from "./images/icons/leaderboard.png";
-import LeaderTrophyIcon from "./images/icons/leader_trophy.png";
 
 // Import audio - hover
 import HoverSound from "./audio/hover/hover.mp3";
@@ -55,15 +53,12 @@ export {
   UploadIcon,
   CloseIcon,
   HeartIcon,
-  LeaderboardIcon,
-  LeaderTrophyIcon,
   HoverSound,
   ClickSound1,
   ClickSound2,
   ClickSound3,
   BgMusic1,
   // BgMusic2,
-
   // BgMusic3,
   // BgMusic4,
   CorrectSound1,
