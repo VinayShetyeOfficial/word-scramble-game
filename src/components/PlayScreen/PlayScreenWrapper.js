@@ -210,6 +210,12 @@ const PlayScreenWrapper = styled.div`
       margin-left: calc(16px * calc(1 - var(--tw-space-x-reverse)));
     }
 
+    .submit_btn_text,
+    .upload_btn_text {
+      font-size: 20px;
+      padding: 13px 20px;
+    }
+
     .game-lives {
       top: 7px;
       right: 10px;
@@ -239,6 +245,12 @@ const PlayScreenWrapper = styled.div`
     .input_wrapper input {
       font-size: 18px;
       padding: 12px;
+    }
+
+    .submit_btn_text,
+    .upload_btn_text {
+      font-size: 16px;
+      padding: 8px 18px;
     }
 
     .game_bar span {
@@ -332,83 +344,6 @@ const PlayScreenWrapper = styled.div`
     60%,
     80% {
       transform: translateX(1px);
-    }
-  }
-
-  .leaderboard_circle {
-    position: fixed;
-    bottom: 14px;
-    right: 14px;
-    background: linear-gradient(145deg, #ffffff, #f3e8ff);
-    border-radius: 50%;
-    box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
-      rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 40;
-    border: 2px solid rgba(168, 85, 247, 0.1);
-    box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
-      rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
-  }
-
-  .leaderboard_circle:hover {
-    transform: scale(1.1) translateY(-2px);
-    background: linear-gradient(145deg, #ffffff, #ede4ff);
-    box-shadow: rgba(168, 85, 247, 0.3) 0px 10px 20px,
-      rgba(168, 85, 247, 0.2) 0px 6px 6px;
-    border: 2px solid rgba(168, 85, 247, 0.2);
-    cursor: pointer;
-  }
-
-  .leaderboard_circle:active {
-    transform: scale(0.95);
-    box-shadow: rgba(168, 85, 247, 0.2) 0px 5px 10px;
-  }
-
-  .leaderboard_icon {
-    width: 35px;
-    height: 35px;
-    filter: drop-shadow(0 0 1px #7e22ce)
-      drop-shadow(0 0 1px rgba(126, 34, 206, 0.3));
-    transition: all 0.3s ease;
-  }
-
-  .leaderboard_circle:hover .leaderboard_icon {
-    filter: drop-shadow(0 0 1px #7e22ce)
-      drop-shadow(0 0 1px rgba(126, 34, 206, 0.4));
-    transform: scale(1.05);
-  }
-
-  @media (max-width: 768px) {
-    .leaderboard_circle {
-      width: 50px;
-      height: 50px;
-      bottom: 15px;
-      right: 15px;
-    }
-
-    .leaderboard_icon {
-      width: 30px;
-      height: 30px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .leaderboard_circle {
-      width: 40px;
-      height: 40px;
-      bottom: 10px;
-      right: 10px;
-    }
-
-    .leaderboard_icon {
-      width: 25px;
-      height: 25px;
     }
   }
 `;
