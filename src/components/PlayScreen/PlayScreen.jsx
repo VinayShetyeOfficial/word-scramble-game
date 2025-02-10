@@ -10,6 +10,8 @@ import {
   GamepadIcon,
   TrophyIcon,
   ClockIcon,
+  LeaderboardIcon,
+  LeaderTrophyIcon,
   GameOverSound,
   LifeDownSound,
 } from "../../assets/assets";
@@ -24,6 +26,7 @@ import { validateWords } from "../../utils/wordValidator";
 import { FaPlayCircle } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import CelebrationEffects from "../CelebrationEffects/CelebrationEffects";
+import Leaderboard from "../Leaderboard/Leaderboard";
 
 const PlayScreen = () => {
   // [Previous state declarations remain the same]
@@ -42,6 +45,7 @@ const PlayScreen = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [celebrationType, setCelebrationType] = useState(null);
   const [isCelebrating, setIsCelebrating] = useState(false);
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
 
   // Add this ref near other state declarations
   const isReducingLife = React.useRef(false);
@@ -70,7 +74,7 @@ const PlayScreen = () => {
   useEffect(() => {
     if (!currentWord) {
       startNewRound();
-      setTimeLeft(60);
+      setTimeLeft(4);
     }
   }, []); // Run once on mount
 
@@ -100,7 +104,7 @@ const PlayScreen = () => {
                 if (newLives > 0) {
                   setTimeout(() => {
                     startNewRound();
-                    setTimeLeft(60);
+                    setTimeLeft(4);
                     setGuess("");
                     isReducingLife.current = false;
                   }, 0);
@@ -153,7 +157,7 @@ const PlayScreen = () => {
 
   // Reset timer when starting new round
   useEffect(() => {
-    setTimeLeft(60);
+    setTimeLeft(4);
   }, [round]);
 
   const handleSubmit = () => {
@@ -175,7 +179,7 @@ const PlayScreen = () => {
       }, 3000);
 
       startNewRound();
-      setTimeLeft(60);
+      setTimeLeft(4);
     } else {
       if (isSoundOn) playRandomWrongSound();
       setIsInvalid(true);
@@ -289,6 +293,9 @@ const PlayScreen = () => {
             setValidationStatus(null);
             setIsProcessing(false);
           }, 1500);
+
+          // Clear previous custom words when new file is uploaded
+          localStorage.removeItem("customWordsFound");
         } else {
           setUploadStatus("error");
           setTimeout(() => setUploadStatus(""), 1500);
@@ -327,7 +334,7 @@ const PlayScreen = () => {
 
   const handleStartGame = () => {
     setShowStartButton(false);
-    setTimeLeft(60);
+    setTimeLeft(4);
     setScore(0);
     setLives(3); // Reset lives to 3
     setIsTimerPaused(false);
@@ -352,7 +359,7 @@ const PlayScreen = () => {
   const handlePlayAgain = () => {
     if (isSoundOn) playClickSound();
     setLives(3);
-    setTimeLeft(60);
+    setTimeLeft(4);
     setGuess("");
     setIsTimerPaused(false);
     setUploadStatus("");
@@ -383,6 +390,44 @@ const PlayScreen = () => {
       },
     },
   };
+
+  useEffect(() => {
+    const currentPlayerId = localStorage.getItem("currentPlayerId");
+    const players = JSON.parse(localStorage.getItem("players") || "[]");
+    const currentPlayer = players.find((p) => p.id === currentPlayerId);
+
+    if (!currentPlayer) {
+      navigate("/");
+      return;
+    }
+
+    // Update words found
+    const updatePlayerWords = (word, isCustomWord = false) => {
+      const players = JSON.parse(localStorage.getItem("players"));
+      const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
+
+      if (playerIndex !== -1) {
+        const wordList = isCustomWord ? "custom_words" : "default_words";
+        if (!players[playerIndex][wordList].includes(word)) {
+          players[playerIndex][wordList].push(word);
+          localStorage.setItem("players", JSON.stringify(players));
+        }
+      }
+    };
+
+    // Update high score
+    const updateHighScore = (newScore) => {
+      const players = JSON.parse(localStorage.getItem("players"));
+      const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
+
+      if (playerIndex !== -1 && newScore > players[playerIndex].high_score) {
+        players[playerIndex].high_score = newScore;
+        localStorage.setItem("players", JSON.stringify(players));
+      }
+    };
+
+    // ... rest of your component logic
+  }, []);
 
   return (
     <PlayScreenWrapper className="flex flex-col min-h-screen bg-purple-700 select-none">
@@ -631,6 +676,26 @@ const PlayScreen = () => {
         onClose={handleCloseModal}
         soundOn={soundOn}
         onSoundToggle={toggleSound}
+      />
+
+      <div
+        className="leaderboard_circle"
+        onClick={() => {
+          if (isSoundOn) playClickSound();
+          setIsLeaderboardOpen(true);
+        }}
+        onMouseEnter={isSoundOn ? playHoverSound : undefined}
+      >
+        <img
+          src={LeaderboardIcon}
+          alt="Leaderboard"
+          className="leaderboard_icon"
+        />
+      </div>
+
+      <Leaderboard
+        isOpen={isLeaderboardOpen}
+        onClose={() => setIsLeaderboardOpen(false)}
       />
     </PlayScreenWrapper>
   );
