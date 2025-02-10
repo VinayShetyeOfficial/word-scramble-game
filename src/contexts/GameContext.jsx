@@ -174,32 +174,9 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
     if (guess.toLowerCase() === currentWord.original.toLowerCase()) {
       const points = currentWord.original.length - 2;
       setScore((prev) => prev + points);
-
-      // Store the word in usedWords state
       const newUsedWords = new Set(usedWords);
       newUsedWords.add(currentWord.original);
       setUsedWords(newUsedWords);
-
-      // Get current player and update their words
-      const currentPlayerId = localStorage.getItem("currentPlayerId");
-      const players = JSON.parse(localStorage.getItem("players") || "[]");
-      const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
-
-      if (playerIndex !== -1) {
-        // Determine if it's a custom word or default word
-        const isCustomWord = Object.keys(userWords).length > 0;
-        const wordList = isCustomWord ? "custom_words" : "default_words";
-
-        // Add word if not already present
-        if (!players[playerIndex][wordList].includes(currentWord.original)) {
-          players[playerIndex][wordList].push(currentWord.original);
-          localStorage.setItem("players", JSON.stringify(players));
-        }
-
-        // Update high score immediately after score is updated
-        updateHighScore(score + points);
-      }
-
       startNewRound();
       return true;
     }
@@ -229,6 +206,7 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
         });
       });
       setUserWords(wordsByLength);
+      localStorage.setItem("userWords", JSON.stringify(wordsByLength));
       return true;
     } catch (error) {
       console.error("Error in uploadWords:", error);
@@ -237,18 +215,6 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
   };
 
   const resetGame = () => {
-    // Update high score before resetting if current score is higher
-    const currentPlayerId = localStorage.getItem("currentPlayerId");
-    if (currentPlayerId) {
-      const players = JSON.parse(localStorage.getItem("players") || "[]");
-      const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
-      if (playerIndex !== -1 && players[playerIndex].high_score < score) {
-        players[playerIndex].high_score = score;
-        localStorage.setItem("players", JSON.stringify(players));
-      }
-    }
-
-    // Rest of the reset logic
     setRound(1);
     setScore(0);
     setCurrentWord(null);
@@ -256,8 +222,7 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
     setUserWords({});
     currentWordLength.current = validWordLengths[0];
     localStorage.removeItem("userWords");
-
-    // Initialize first word from default list
+    // Immediately initialize the first word from the default list.
     const defaultWords = getWordsByLength(validWordLengths[0]);
     if (defaultWords && defaultWords.length > 0) {
       const initialWord =
@@ -291,81 +256,6 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
       console.error("Error initializing game:", error);
     }
   }, [round, userWords]);
-
-  // Initialize user data when component mounts
-  useEffect(() => {
-    const userId =
-      localStorage.getItem("userId") || Math.random().toString(36).substr(2, 9);
-    localStorage.setItem("userId", userId);
-  }, []);
-
-  const updateHighScore = (newScore) => {
-    const currentPlayerId = localStorage.getItem("currentPlayerId");
-    if (currentPlayerId) {
-      const players = JSON.parse(localStorage.getItem("players") || "[]");
-      const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
-      if (playerIndex !== -1 && players[playerIndex].high_score < newScore) {
-        players[playerIndex].high_score = newScore;
-        localStorage.setItem("players", JSON.stringify(players));
-      }
-    }
-  };
-
-  const initializePlayerWords = () => {
-    const currentPlayerId = localStorage.getItem("currentPlayerId");
-    if (currentPlayerId) {
-      const players = JSON.parse(localStorage.getItem("players") || "[]");
-      const player = players.find((p) => p.id === currentPlayerId);
-
-      if (player) {
-        // Initialize the usedWords Set with previously found words
-        const foundWords = new Set([
-          ...player.default_words,
-          ...player.custom_words,
-        ]);
-        setUsedWords(foundWords);
-      }
-    }
-  };
-
-  // Add to useEffect that runs on component mount
-  useEffect(() => {
-    initializePlayerWords();
-  }, []); // Empty dependency array means this runs once on mount
-
-  const updateFoundWords = (word, isCustomWord = false) => {
-    const currentPlayerId = localStorage.getItem("currentPlayerId");
-    if (currentPlayerId) {
-      const players = JSON.parse(localStorage.getItem("players") || "[]");
-      const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
-
-      if (playerIndex !== -1) {
-        // Update the appropriate array based on whether it's a custom or default word
-        const arrayToUpdate = isCustomWord ? "custom_words" : "default_words";
-        if (!players[playerIndex][arrayToUpdate].includes(word)) {
-          players[playerIndex][arrayToUpdate].push(word);
-          localStorage.setItem("players", JSON.stringify(players));
-        }
-      }
-    }
-  };
-
-  const handleCorrectAnswer = () => {
-    // Calculate new score based on word length and time remaining
-    const timeBonus = Math.floor(timeLeft * 0.1);
-    const wordLengthBonus = currentWord ? currentWord.original.length * 2 : 0;
-    const roundBonus = round * 5;
-    const newScore = score + 10 + timeBonus + wordLengthBonus + roundBonus;
-
-    setScore(newScore);
-    updateHighScore(newScore);
-
-    // Update found words in localStorage
-    const isCustomWord = Boolean(userWords[currentWord.original.length]);
-    updateFoundWords(currentWord.original, isCustomWord);
-
-    // Rest of the handling logic...
-  };
 
   const value = {
     gameMode,
