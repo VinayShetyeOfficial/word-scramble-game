@@ -40,24 +40,24 @@ const NameEntryPage = () => {
     return true;
   };
 
-  const handleStartGame = () => {
-    if (isValidGameName(name)) {
-      playClickSound();
-      setAnimate(true);
-      setTimeout(() => {
-        navigate("/load", { state: { playerName: name } });
-      }, 1100);
-    } else {
+  const handleSubmit = () => {
+    if (!isValidGameName(name)) {
       setIsInvalid(true);
-      setTimeout(() => {
-        setIsInvalid(false);
-      }, 1000);
+      setTimeout(() => setIsInvalid(false), 820);
+      return;
     }
+
+    // Only navigate if name is valid
+    navigate("/load", {
+      state: {
+        playerName: name,
+      },
+    });
   };
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
-      handleStartGame();
+      handleSubmit();
     }
   };
 
@@ -103,7 +103,7 @@ const NameEntryPage = () => {
           className={`btn_start_game mt-2 sm:mt-3 md:mt-4 select-none bg-blue-700 text-2xl sm:text-3xl md:text-4xl mx-auto text-white rounded-full shadow-lg transform transition-transform duration-1000 ${
             animate ? "scale-15" : ""
           }`}
-          onClick={handleStartGame}
+          onClick={handleSubmit}
           onMouseEnter={playHoverSound} // Play hover sound
         >
           <span
