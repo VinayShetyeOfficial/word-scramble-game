@@ -11,10 +11,12 @@ import { MdLeaderboard } from "react-icons/md";
 import useSoundEffects from "../../hooks/useSoundEffects";
 import { useMusic } from "../../contexts/MusicContext"; // Added MusicContext import
 import { motion, AnimatePresence } from "framer-motion";
+import WordsFound from "../WordsFound/WordsFound";
 
 const MenuModal = ({ isOpen, onClose }) => {
   const { isMusicOn, isSoundOn, toggleMusic, toggleSound } = useMusic(); // Using MusicContext
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isWordsFoundOpen, setIsWordsFoundOpen] = useState(false);
   const { playHoverSound, playClickSound } = useSoundEffects();
 
   useEffect(() => {
@@ -42,6 +44,16 @@ const MenuModal = ({ isOpen, onClose }) => {
   const closeHelp = () => {
     playClickSound();
     setIsHelpOpen(false);
+  };
+
+  const openWordsFound = () => {
+    playClickSound();
+    setIsWordsFoundOpen(true);
+  };
+
+  const closeWordsFound = () => {
+    playClickSound();
+    setIsWordsFoundOpen(false);
   };
 
   const modalVariants = {
@@ -106,7 +118,7 @@ const MenuModal = ({ isOpen, onClose }) => {
                 onClick={handleToggleSound}
                 onMouseEnter={playHoverSound}
               >
-                <span className="block inline-flex justify-center px-10 py-4 w-full bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-full transition-opacity duration-1000 -translate-y-1 modal-btn-text hover:bg-gradient-to-tl active:-translate-y-0">
+                <span className="block inline-flex justify-center items-center px-10 py-4 w-full bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-full -translate-y-1 modal-btn-text hover:bg-gradient-to-tl active:-translate-y-0">
                   {isSoundOn ? "Sound On" : "Sound Off"}
                   {isSoundOn ? (
                     <HiMiniSpeakerWave className="ml-2 w-8 h-8 icon" />
@@ -120,7 +132,7 @@ const MenuModal = ({ isOpen, onClose }) => {
                 onClick={handleToggleMusic}
                 onMouseEnter={playHoverSound}
               >
-                <span className="block inline-flex justify-center px-10 py-4 w-full bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-full transition-opacity duration-1000 -translate-y-1 modal-btn-text hover:bg-gradient-to-tl active:-translate-y-0">
+                <span className="block inline-flex justify-center items-center px-10 py-4 w-full bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-full -translate-y-1 modal-btn-text hover:bg-gradient-to-tl active:-translate-y-0">
                   {isMusicOn ? "Music On" : "Music Off"}
                   {isMusicOn ? (
                     <HiMiniSpeakerWave className="ml-2 w-8 h-8 icon" />
@@ -134,18 +146,18 @@ const MenuModal = ({ isOpen, onClose }) => {
                 onClick={openHelp}
                 onMouseEnter={playHoverSound}
               >
-                <span className="block inline-flex justify-center px-10 py-4 w-full bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-full transition-opacity duration-1000 -translate-y-1 modal-btn-text hover:bg-gradient-to-tl active:-translate-y-0">
+                <span className="block inline-flex justify-center items-center px-10 py-4 w-full bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-full -translate-y-1 modal-btn-text hover:bg-gradient-to-tl active:-translate-y-0">
                   Help <PiInfoFill className="ml-2 w-8 h-8 icon" />
                 </span>
               </button>
               <button
                 className="modal-btn tracking-wider bg-green-700 text-2xl mx-auto text-white rounded-full shadow-lg transform transition-transform duration-1000 w-full max-w-[280px]"
-                onClick={playClickSound}
+                onClick={openWordsFound}
                 onMouseEnter={playHoverSound}
               >
-                <span className="block inline-flex justify-center px-10 py-4 w-full bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-full transition-opacity duration-1000 -translate-y-1 modal-btn-text hover:bg-gradient-to-tl active:-translate-y-0">
+                <span className="block inline-flex justify-center items-center px-10 py-4 w-full bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-full -translate-y-1 modal-btn-text hover:bg-gradient-to-tl active:-translate-y-0">
                   Words Found{" "}
-                  <IoCheckmarkCircle className="ml-2 w-8 h-8 icon active:text-green-800" />
+                  <IoCheckmarkCircle className="ml-2 w-8 h-8 icon" />
                 </span>
               </button>
               <button
@@ -156,7 +168,7 @@ const MenuModal = ({ isOpen, onClose }) => {
                 }}
                 onMouseEnter={playHoverSound}
               >
-                <span className="block px-10 py-4 w-full bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-full transition-opacity duration-1000 -translate-y-1 modal-btn-text hover:bg-gradient-to-tl active:-translate-y-0">
+                <span className="block inline-flex justify-center items-center px-10 py-4 w-full bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-full -translate-y-1 modal-btn-text hover:bg-gradient-to-tl active:-translate-y-0">
                   Quit
                 </span>
               </button>
@@ -167,7 +179,7 @@ const MenuModal = ({ isOpen, onClose }) => {
                   className="fixed inset-0 opacity-50 bg-slate-900"
                   onClick={closeHelp}
                 ></div>
-                <div className="help_modal relative bg-white p-8 rounded-lg shadow-lg max-w-md w-full max-h-[80vh] overflow-y-auto z-70">
+                <div className="help_modal relative bg-white p-8 rounded-lg shadow-lg max-w-md w-full max-h-[58vh] overflow-hidden z-70">
                   <button
                     onClick={closeHelp}
                     onMouseEnter={playHoverSound}
@@ -178,10 +190,10 @@ const MenuModal = ({ isOpen, onClose }) => {
                   <h3 className="mb-6 text-3xl font-bold tracking-wider text-center text-purple-700 help_heading">
                     Game Instructions
                   </h3>
-                  <div className="space-y-4 modal_items">
+                  <div className="overflow-y-auto space-y-4 modal_items mask-fade-bottom">
                     <div className="flex items-start mb-4 space-x-2 space-x-4 modal_item item_1">
                       <RxLapTimer className="w-20 h-6 text-green-500 modal_icon icon_1" />
-                      <p className="font-sans text-lg font-bold tracking-wide leading-5">
+                      <p className="font-sans text-lg font-normal tracking-wide leading-5">
                         <strong className="text-green-600">
                           Timed Rounds:
                         </strong>{" "}
@@ -191,15 +203,15 @@ const MenuModal = ({ isOpen, onClose }) => {
                     </div>
                     <div className="flex items-start mb-4 space-x-2 space-x-4 modal_item item_2">
                       <FaFileUpload className="w-20 h-6 text-blue-500 modal_icon icon_2" />
-                      <p className="font-sans text-lg font-bold tracking-wide leading-5">
+                      <p className="font-sans text-lg font-normal tracking-wide leading-5">
                         <strong className="text-blue-600">Upload Words:</strong>{" "}
-                        You can upload a text file with your own set of words.
-                        Supported formats include .txt and others.
+                        You can upload a text file (*.txt) with your own set of
+                        words separated by commas or spaces.
                       </p>
                     </div>
                     <div className="flex items-start mb-4 space-x-2 space-x-4 modal_item item_3">
                       <FaLightbulb className="w-20 h-6 text-yellow-500 modal_icon icon_3" />
-                      <p className="font-sans text-lg font-bold tracking-wide leading-5">
+                      <p className="font-sans text-lg font-normal tracking-wide leading-5">
                         <strong className="text-yellow-600">Hints:</strong> Use
                         hints if you get stuck. Each hint will reveal one letter
                         of the word.
@@ -207,7 +219,7 @@ const MenuModal = ({ isOpen, onClose }) => {
                     </div>
                     <div className="flex items-start mb-4 space-x-2 space-x-4 modal_item item_4">
                       <MdLeaderboard className="w-20 h-6 text-red-500 modal_icon icon_4" />
-                      <p className="font-sans text-lg font-bold tracking-wide leading-5">
+                      <p className="font-sans text-lg font-normal tracking-wide leading-5">
                         <strong className="text-red-600">Leaderboard:</strong>{" "}
                         Check out the top players on the leaderboard. Aim for
                         the highest score!
@@ -215,6 +227,15 @@ const MenuModal = ({ isOpen, onClose }) => {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+            {isWordsFoundOpen && (
+              <div className="flex fixed inset-0 justify-center items-center z-60">
+                <div
+                  className="fixed inset-0 opacity-50 bg-slate-900"
+                  onClick={closeWordsFound}
+                ></div>
+                <WordsFound onClose={closeWordsFound} />
               </div>
             )}
           </motion.div>
