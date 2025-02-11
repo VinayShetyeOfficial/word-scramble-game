@@ -19,6 +19,7 @@ export const GameProvider = ({ children }) => {
   const [usedWords, setUsedWords] = useState(new Set());
   const [userWords, setUserWords] = useState({});
   const currentWordLength = useRef(4);
+  const [lives, setLives] = useState(3);
 
   // Get valid word lengths from the default word list (keys sorted ascending)
   const validWordLengths = Object.keys(wordList)
@@ -116,7 +117,6 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
 ========================================`);
       }
 
-      // IMPORTANT CHANGE: Remove "|| usedWordsArray.length >= 10"
       if (unusedWords.length === 0) {
         const currentIndex = validWordLengths.indexOf(
           currentWordLength.current
@@ -126,9 +126,27 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
           const previousLength = currentWordLength.current;
           currentWordLength.current = nextLength;
           setUsedWords(new Set()); // reset used words for new category
-          if (previousLength !== nextLength) {
-            setRound(currentIndex + 2);
+
+          // Update round based on current category length
+          const newRound = validWordLengths.indexOf(nextLength) + 1;
+          setRound(newRound);
+
+          // Immediately update localStorage with new round and category
+          const currentPlayerId = localStorage.getItem("currentPlayerId");
+          const players = JSON.parse(localStorage.getItem("players") || "[]");
+          const playerIndex = players.findIndex(
+            (p) => p.id === currentPlayerId
+          );
+
+          if (playerIndex !== -1 && Object.keys(userWords).length === 0) {
+            players[playerIndex].gameProgress = {
+              ...players[playerIndex].gameProgress,
+              currentRound: newRound,
+              currentCategory: nextLength,
+            };
+            localStorage.setItem("players", JSON.stringify(players));
           }
+
           return getNextWord();
         } else {
           return null; // Game complete
@@ -175,29 +193,30 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
       const points = currentWord.original.length - 2;
       setScore((prev) => prev + points);
 
-      // Store the word in usedWords state
       const newUsedWords = new Set(usedWords);
       newUsedWords.add(currentWord.original);
       setUsedWords(newUsedWords);
 
-      // Get current player and update their words
-      const currentPlayerId = localStorage.getItem("currentPlayerId");
-      const players = JSON.parse(localStorage.getItem("players") || "[]");
-      const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
+      // Only update localStorage for default word list game
+      if (Object.keys(userWords).length === 0) {
+        const currentPlayerId = localStorage.getItem("currentPlayerId");
+        const players = JSON.parse(localStorage.getItem("players") || "[]");
+        const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
 
-      if (playerIndex !== -1) {
-        // Determine if it's a custom word or default word
-        const isCustomWord = Object.keys(userWords).length > 0;
-        const wordList = isCustomWord ? "custom_words" : "default_words";
-
-        // Add word if not already present
-        if (!players[playerIndex][wordList].includes(currentWord.original)) {
-          players[playerIndex][wordList].push(currentWord.original);
+        if (playerIndex !== -1) {
+          players[playerIndex].gameProgress = {
+            ...players[playerIndex].gameProgress,
+            currentRound: round,
+            currentScore: score + points,
+            currentCategory: currentWordLength.current,
+            currentLives: lives,
+            wordsCompleted: [
+              ...players[playerIndex].gameProgress.wordsCompleted,
+              currentWord.original,
+            ],
+          };
           localStorage.setItem("players", JSON.stringify(players));
         }
-
-        // Update high score immediately after score is updated
-        updateHighScore(score + points);
       }
 
       startNewRound();
@@ -208,6 +227,7 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
 
   const uploadWords = async (validWords) => {
     try {
+      // Process custom words without resetting game state
       setUsedWords(new Set());
       const wordsByLength = {};
       validWords.forEach((wordObj) => {
@@ -242,13 +262,27 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
     if (currentPlayerId) {
       const players = JSON.parse(localStorage.getItem("players") || "[]");
       const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
-      if (playerIndex !== -1 && players[playerIndex].high_score < score) {
-        players[playerIndex].high_score = score;
+      if (playerIndex !== -1) {
+        // Update high score if needed
+        if (players[playerIndex].high_score < score) {
+          players[playerIndex].high_score = score;
+        }
+
+        // Reset gameProgress
+        players[playerIndex].gameProgress = {
+          currentRound: 1,
+          currentScore: 0,
+          currentCategory: 4, // Reset to starting category
+          currentLives: 3, // Reset lives to 3
+          wordsCompleted: [], // Clear completed words
+        };
+
+        // Update localStorage with reset state
         localStorage.setItem("players", JSON.stringify(players));
       }
     }
 
-    // Rest of the reset logic
+    // Reset all state variables
     setRound(1);
     setScore(0);
     setCurrentWord(null);
@@ -318,12 +352,27 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
       const player = players.find((p) => p.id === currentPlayerId);
 
       if (player) {
+        // Initialize default arrays if they don't exist
+        if (!player.default_words) {
+          player.default_words = [];
+        }
+        if (!player.custom_words) {
+          player.custom_words = [];
+        }
+
         // Initialize the usedWords Set with previously found words
         const foundWords = new Set([
-          ...player.default_words,
-          ...player.custom_words,
+          ...(Array.isArray(player.default_words) ? player.default_words : []),
+          ...(Array.isArray(player.custom_words) ? player.custom_words : []),
         ]);
         setUsedWords(foundWords);
+
+        // Update player in localStorage with initialized arrays
+        const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
+        if (playerIndex !== -1) {
+          players[playerIndex] = player;
+          localStorage.setItem("players", JSON.stringify(players));
+        }
       }
     }
   };
@@ -367,6 +416,122 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
     // Rest of the handling logic...
   };
 
+  // Add function to update lives in localStorage
+  const updateLives = (newLives) => {
+    const currentPlayerId = localStorage.getItem("currentPlayerId");
+    const players = JSON.parse(localStorage.getItem("players") || "[]");
+    const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
+
+    if (playerIndex !== -1 && Object.keys(userWords).length === 0) {
+      players[playerIndex].gameProgress.currentLives = newLives;
+      localStorage.setItem("players", JSON.stringify(players));
+    }
+  };
+
+  // Modify handleGameOver to reset game progress immediately
+  const handleGameOver = () => {
+    const currentPlayerId = localStorage.getItem("currentPlayerId");
+    const players = JSON.parse(localStorage.getItem("players") || "[]");
+    const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
+
+    if (playerIndex !== -1 && Object.keys(userWords).length === 0) {
+      // Update high score if needed
+      if (players[playerIndex].high_score < score) {
+        players[playerIndex].high_score = score;
+      }
+
+      // Set lives to 0 in both state and localStorage
+      setLives(0);
+
+      // Reset game progress with lives explicitly set to 0
+      players[playerIndex].gameProgress = {
+        currentRound: 1,
+        currentScore: 0,
+        currentCategory: 4,
+        currentLives: 0, // Explicitly set to 0 for game over
+        wordsCompleted: [],
+      };
+
+      localStorage.setItem("players", JSON.stringify(players));
+    }
+  };
+
+  const updateRound = (newRound) => {
+    const currentPlayerId = localStorage.getItem("currentPlayerId");
+    const players = JSON.parse(localStorage.getItem("players") || "[]");
+    const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
+
+    if (playerIndex !== -1 && Object.keys(userWords).length === 0) {
+      players[playerIndex].gameProgress.currentRound = newRound;
+      localStorage.setItem("players", JSON.stringify(players));
+    }
+  };
+
+  // Add useEffect to sync round with category on component mount
+  useEffect(() => {
+    const currentPlayerId = localStorage.getItem("currentPlayerId");
+    if (currentPlayerId) {
+      const players = JSON.parse(localStorage.getItem("players") || "[]");
+      const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
+
+      if (playerIndex !== -1 && Object.keys(userWords).length === 0) {
+        const currentCategory =
+          players[playerIndex].gameProgress.currentCategory;
+        const correctRound = validWordLengths.indexOf(currentCategory) + 1;
+
+        if (correctRound !== players[playerIndex].gameProgress.currentRound) {
+          players[playerIndex].gameProgress.currentRound = correctRound;
+          localStorage.setItem("players", JSON.stringify(players));
+          setRound(correctRound);
+        }
+      }
+    }
+  }, []);
+
+  // Add this effect to initialize game state from localStorage
+  useEffect(() => {
+    const currentPlayerId = localStorage.getItem("currentPlayerId");
+    if (currentPlayerId) {
+      const players = JSON.parse(localStorage.getItem("players") || "[]");
+      const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
+
+      if (playerIndex !== -1 && Object.keys(userWords).length === 0) {
+        const gameProgress = players[playerIndex].gameProgress;
+
+        // Initialize score from localStorage
+        if (gameProgress.currentScore !== undefined) {
+          setScore(gameProgress.currentScore);
+        }
+
+        // Initialize lives - only set to 3 if currentLives is 0 (game over state)
+        if (gameProgress.currentLives !== undefined) {
+          if (gameProgress.currentLives === 0) {
+            setLives(3);
+            // Update localStorage with new lives count
+            players[playerIndex].gameProgress.currentLives = 3;
+            localStorage.setItem("players", JSON.stringify(players));
+          } else {
+            setLives(gameProgress.currentLives);
+          }
+        }
+
+        // Initialize round (already handled in previous update)
+        const currentCategory = gameProgress.currentCategory;
+        const correctRound = validWordLengths.indexOf(currentCategory) + 1;
+
+        if (correctRound !== gameProgress.currentRound) {
+          players[playerIndex].gameProgress.currentRound = correctRound;
+          localStorage.setItem("players", JSON.stringify(players));
+          setRound(correctRound);
+        }
+
+        // Initialize current word length
+        currentWordLength.current =
+          gameProgress.currentCategory || validWordLengths[0];
+      }
+    }
+  }, []); // Empty dependency array means this runs once on mount
+
   const value = {
     gameMode,
     setGameMode,
@@ -383,6 +548,10 @@ Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
     uploadWords,
     userWords,
     resetGame,
+    updateLives,
+    handleGameOver,
+    updateHighScore,
+    updateRound,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
