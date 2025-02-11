@@ -75,11 +75,11 @@ const PlayScreen = () => {
   useEffect(() => {
     if (!currentWord) {
       startNewRound();
-      setTimeLeft(30);
+      setTimeLeft(12);
     }
   }, []);
 
-  // Updated timer effect to handle immediate life updates
+  // Updated timer effect to handle immediate life updates and store missed words
   useEffect(() => {
     let timer;
     if (!isTimerPaused) {
@@ -94,32 +94,42 @@ const PlayScreen = () => {
                   console.error("Error playing life down sound:", error)
                 );
             }
+
+            // Only store missed words for default game mode
+            if (Object.keys(userWords).length === 0) {
+              const currentPlayerId = localStorage.getItem("currentPlayerId");
+              const players = JSON.parse(
+                localStorage.getItem("players") || "[]"
+              );
+              const playerIndex = players.findIndex(
+                (p) => p.id === currentPlayerId
+              );
+
+              if (playerIndex !== -1 && currentWord) {
+                players[playerIndex].gameProgress = {
+                  ...players[playerIndex].gameProgress,
+                  wordsCompleted: [
+                    ...players[playerIndex].gameProgress.wordsCompleted,
+                    currentWord.original,
+                  ],
+                  currentLives: lives - 1,
+                };
+                localStorage.setItem("players", JSON.stringify(players));
+              }
+            }
+
             setTimeout(() => {
               setLives((prevLives) => {
                 const newLives = prevLives - 1;
 
-                // Immediately update lives in localStorage
-                const currentPlayerId = localStorage.getItem("currentPlayerId");
-                const players = JSON.parse(
-                  localStorage.getItem("players") || "[]"
-                );
-                const playerIndex = players.findIndex(
-                  (p) => p.id === currentPlayerId
-                );
-                if (playerIndex !== -1 && Object.keys(userWords).length === 0) {
-                  players[playerIndex].gameProgress.currentLives = newLives;
-                  localStorage.setItem("players", JSON.stringify(players));
-                }
-
                 if (newLives > 0) {
                   setTimeout(() => {
                     startNewRound();
-                    setTimeLeft(30);
+                    setTimeLeft(12);
                     setGuess("");
                     isReducingLife.current = false;
                   }, 0);
                 } else {
-                  // Game Over handling
                   setIsTimerPaused(true);
                   isReducingLife.current = false;
                   handleGameOver();
@@ -164,9 +174,26 @@ const PlayScreen = () => {
   }, []); // Empty dependency array means this runs once on mount
 
   // Update renderHearts to ensure it uses the correct lives count
-  // Update renderHearts to ensure it uses the correct lives count
   const renderHearts = () => {
-    // Get current lives from localStorage to ensure accuracy
+    // For custom words mode, use the lives state directly
+    if (Object.keys(userWords).length > 0) {
+      return Array(3)
+        .fill(null)
+        .map((_, index) => (
+          <img
+            key={index}
+            src={HeartIcon}
+            alt="Heart"
+            className={`game-life-icon ${index >= lives ? "lost" : ""}`}
+            style={{
+              opacity: index >= lives ? 0.4 : 1,
+              transition: "opacity 0.4s ease 0.1s",
+            }}
+          />
+        ));
+    }
+
+    // For default mode, use localStorage
     const currentPlayerId = localStorage.getItem("currentPlayerId");
     const players = JSON.parse(localStorage.getItem("players") || "[]");
     const player = players.find((p) => p.id === currentPlayerId);
@@ -189,7 +216,7 @@ const PlayScreen = () => {
   };
 
   useEffect(() => {
-    setTimeLeft(30);
+    setTimeLeft(12);
   }, [round]);
 
   const handleSubmit = () => {
@@ -238,7 +265,7 @@ const PlayScreen = () => {
       }, 3000);
 
       startNewRound();
-      setTimeLeft(30);
+      setTimeLeft(12);
     } else {
       if (isSoundOn) playRandomWrongSound();
       setIsInvalid(true);
@@ -392,28 +419,31 @@ const PlayScreen = () => {
 
   const handleStartGame = () => {
     setShowStartButton(false);
-    setTimeLeft(30);
+    setTimeLeft(12);
     setScore(0);
-
-    // Always reset lives and game state when starting custom words game
     setLives(3);
 
-    // Update localStorage with reset game state
-    const currentPlayerId = localStorage.getItem("currentPlayerId");
-    const players = JSON.parse(localStorage.getItem("players") || "[]");
-    const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
+    // Only update localStorage for default game mode
+    if (Object.keys(userWords).length === 0) {
+      const currentPlayerId = localStorage.getItem("currentPlayerId");
+      const players = JSON.parse(localStorage.getItem("players") || "[]");
+      const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
 
-    if (playerIndex !== -1) {
-      players[playerIndex].gameProgress = {
-        ...players[playerIndex].gameProgress,
-        currentLives: 3,
-        currentScore: 0,
-        currentRound: Object.keys(userWords).length > 0 ? "∞" : 1,
-      };
-      localStorage.setItem("players", JSON.stringify(players));
+      if (playerIndex !== -1) {
+        players[playerIndex].gameProgress = {
+          ...players[playerIndex].gameProgress,
+          currentLives: 3,
+          currentScore: 0,
+          currentRound: 1,
+          currentCategory: 4,
+          wordsCompleted: [],
+        };
+        localStorage.setItem("players", JSON.stringify(players));
+      }
     }
 
     setIsTimerPaused(false);
+    // Set round to "∞" for custom words, but don't update localStorage
     setRound(Object.keys(userWords).length > 0 ? "∞" : 1);
     startNewRound();
 
@@ -428,7 +458,7 @@ const PlayScreen = () => {
   const handlePlayAgain = () => {
     if (isSoundOn) playClickSound();
     setLives(3);
-    setTimeLeft(30);
+    setTimeLeft(12);
     setGuess("");
     setIsTimerPaused(false);
     setUploadStatus("");
