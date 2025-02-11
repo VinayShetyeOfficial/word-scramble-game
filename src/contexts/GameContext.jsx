@@ -27,6 +27,12 @@ export const GameProvider = ({ children }) => {
     .sort((a, b) => a - b);
 
   const getNextWord = () => {
+    // Get completed words from localStorage
+    const currentPlayerId = localStorage.getItem("currentPlayerId");
+    const players = JSON.parse(localStorage.getItem("players") || "[]");
+    const player = players.find((p) => p.id === currentPlayerId);
+    const completedWords = player?.gameProgress?.wordsCompleted || [];
+
     // CUSTOM WORDS MODE
     if (Object.keys(userWords).length > 0) {
       try {
@@ -99,7 +105,8 @@ Remaining Word List: [${unusedAllWords.map((w) => w.original).join(", ")}]
 
       const unusedWords = availableWords.filter((wordObj) => {
         const original = wordObj.original || wordObj;
-        return !usedWords.has(original);
+        // Check both usedWords Set and completedWords array
+        return !usedWords.has(original) && !completedWords.includes(original);
       });
 
       // Debug info for default mode
@@ -111,7 +118,9 @@ Default Mode - ${currentWordLength.current}-Letter Words
 ========================================
 Total Words Available: ${availableWords.length}
 Used Words: ${usedWordsArray.length}
+Completed Words: ${completedWords.length}
 Used Words List: [${usedWordsArray.join(", ")}]
+Completed Words List: [${completedWords.join(", ")}]
 Remaining Words: ${unusedWords.length}
 Remaining Word List: [${unusedWords.map((w) => w.original || w).join(", ")}]
 ========================================`);
