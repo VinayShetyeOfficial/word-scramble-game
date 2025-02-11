@@ -20,20 +20,28 @@ const LoadingScreen = () => {
     let player = players.find((p) => p.player === playerName);
 
     if (!player) {
-      // Create new player structure
+      // Only create new player structure for new players
       player = {
         id: Math.random().toString(36).substr(2, 9),
         player: playerName,
-        default_words: [],
-        custom_words: [],
-        high_score: 0,
         joinedDate: new Date().toISOString(),
+        high_score: 0,
+        gameProgress: {
+          currentRound: 1,
+          currentScore: 0,
+          currentCategory: 4,
+          currentLives: 3,
+          wordsCompleted: [],
+        },
+        custom_words: [],
+        default_words: [],
       };
       players.push(player);
       localStorage.setItem("players", JSON.stringify(players));
     }
+    // No else block - we don't reset existing player's progress
 
-    // Store only the current player's ID as reference
+    // Store current player's ID as reference
     localStorage.setItem("currentPlayerId", player.id);
 
     const timer = setTimeout(() => {
