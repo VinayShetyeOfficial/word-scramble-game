@@ -40,24 +40,24 @@ const NameEntryPage = () => {
     return true;
   };
 
-  const handleSubmit = () => {
-    if (!isValidGameName(name)) {
+  const handleStartGame = () => {
+    if (isValidGameName(name)) {
+      playClickSound();
+      setAnimate(true);
+      setTimeout(() => {
+        navigate("/load", { state: { playerName: name } });
+      }, 1100);
+    } else {
       setIsInvalid(true);
-      setTimeout(() => setIsInvalid(false), 820);
-      return;
+      setTimeout(() => {
+        setIsInvalid(false);
+      }, 1000);
     }
-
-    // Only navigate if name is valid
-    navigate("/load", {
-      state: {
-        playerName: name,
-      },
-    });
   };
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
-      handleSubmit();
+      handleStartGame();
     }
   };
 
@@ -65,15 +65,7 @@ const NameEntryPage = () => {
   const handleNameChange = (e) => {
     const value = e.target.value;
     if (value === "" || /^[a-zA-Z0-9_ ]*$/.test(value)) {
-      // Convert to Title Case (first letter of each word capitalized)
-      const titleCaseValue = value
-        .toLowerCase()
-        .split(" ")
-        .map(
-          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        )
-        .join(" ");
-      setName(titleCaseValue);
+      setName(value);
     }
   };
 
@@ -101,9 +93,8 @@ const NameEntryPage = () => {
 
         <button
           className={`btn_start_game mt-2 sm:mt-3 md:mt-4 select-none bg-blue-700 text-2xl sm:text-3xl md:text-4xl mx-auto text-white rounded-full shadow-lg transform transition-transform duration-1000 ${
-            animate ? "scale-15" : ""
-          }`}
-          onClick={handleSubmit}
+            animate ? "scale-15" : ""}`}
+          onClick={handleStartGame}
           onMouseEnter={playHoverSound} // Play hover sound
         >
           <span
