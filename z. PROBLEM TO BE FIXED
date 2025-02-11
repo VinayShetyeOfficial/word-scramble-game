@@ -1,0 +1,91 @@
+Do not alter any part of the code.
+
+Currently, when a user plays the game, their game progress is stored in localStorage for different scenarios, which is already implemented.
+
+Reference Object:
+{
+    "id": "h5to4a33j",
+    "player": "Justin",
+    "joinedDate": "2025-02-11T02:52:04.532Z",
+    "high_score": 6,
+    "gameProgress": {
+        "currentRound": 1,
+        "currentScore": 0,
+        "currentCategory": 4,
+        "currentLives": 3,
+        "wordsCompleted": []
+    },
+    "custom_words": [
+        "KIWI",
+        "APPLE",
+        "MANGO",
+        "GRAPE",
+        "STRAWBERRY",
+        "WATERMELON",
+        "BANANA",
+        "ORANGE",
+        "BLUEBERRY"
+    ],
+    "default_words": [
+        "BOOK",
+        "LOVE",
+        "FISH",
+        "GAME",
+        "PLAY",
+        "HOME",
+        "CODE",
+        "TEXT",
+        "WORD",
+        "TREE",
+        "SMILE",
+        "MOUSE",
+        "WATER",
+        "TABLE"
+    ]
+}
+
+Implementation Details:
+We have a predefined set of words stored in word.js categorized into 7 categories (4-letter to 10-letter words, each containing 10 words).
+The shuffleArray function provides a random word from the current category.
+
+Issues to Fix:
+1. Repeating Previously Answered Words on Returning Users
+When a returning player enters their name (which is detected from localStorage), the game incorrectly displays 1 or 2 already answered words before proceeding to the next category.
+For example, if a player correctly answers all 10 words from the 4-letter category (Score: 10), then refreshes the page and re-enters their name, the game should continue from the next category. However, currently, it repeats some previously answered words before moving on.
+
+2. Incorrect Game Reset on "Play Again"
+When the game ends and the user selects "Play Again," it should restart properly from the first category with all words before moving to the next.
+Instead, after resetting, the game currently skips most words in the first category and moves to the next category prematurely.
+
+This issue is reflected in the following object:
+{
+    "id": "h5to4a33j",
+    "player": "Justin",
+    "joinedDate": "2025-02-11T02:52:04.532Z",
+    "high_score": 6,
+    "gameProgress": {
+        "currentRound": 2,
+        "currentScore": 2,
+        "currentCategory": 5,
+        "currentLives": 3,
+        "wordsCompleted": [
+            "LOVE"
+        ]
+    }
+}
+
+Here, instead of starting with all words from the 4-letter category, the game showed only 1 word ("LOVE") and moved to the next category.
+
+Fixing the Issue:
+1. Ensure that when a user returns to the game, it fetches wordsCompleted from localStorage and continues from where they left off without repeating already answered words.
+2. When "Play Again" is selected, ensure that all words from one category are shown before moving to the next category.
+3. Track the length of the shuffled array dynamically.
+- Once the length is met, increment the round.
+- Calculate the next shuffle array length dynamically instead of assuming a static 10-word limit.
+4. Implement logic to avoid repeating wordsCompleted from localStorage when continuing a game.
+5. Modify round increment logic:
+- Instead of static round progression, use the formula: abs(PlayedCategoryLength - RemainingCategoryLength)
+- When this value reaches 0, increment the round.
+6. If necessary, store additional details (PlayedCategoryLength / RemainingCategoryLength) to better track progress.
+
+You are free to use any libraries or techniques to improve state management and tracking.
