@@ -29,7 +29,6 @@ import CelebrationEffects from "../CelebrationEffects/CelebrationEffects";
 import Leaderboard from "../Leaderboard/Leaderboard";
 
 const PlayScreen = () => {
-  // [Previous state declarations remain the same]
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
   const [guess, setGuess] = useState("");
@@ -47,10 +46,8 @@ const PlayScreen = () => {
   const [isCelebrating, setIsCelebrating] = useState(false);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
 
-  // Add this ref near other state declarations
   const isReducingLife = React.useRef(false);
 
-  // [Previous hooks and context remain the same]
   const { playHoverSound, playClickSound } = useSoundEffects();
   const {
     round,
@@ -63,32 +60,33 @@ const PlayScreen = () => {
     setScore,
     userWords,
     resetGame,
+    updateLives,
+    handleGameOver,
+    updateHighScore,
+    updateRound,
   } = useGame();
+
   const { isSoundOn } = useMusic();
   const navigate = useNavigate();
 
   const gameOverSoundRef = React.useRef(new Audio(GameOverSound));
   const lifeDownSoundRef = React.useRef(new Audio(LifeDownSound));
 
-  // Remove the useLayoutEffect initialization
   useEffect(() => {
     if (!currentWord) {
       startNewRound();
-      setTimeLeft(4);
+      setTimeLeft(30);
     }
-  }, []); // Run once on mount
+  }, []);
 
-  // Updated Timer effect with improved lives handling
+  // Updated timer effect to handle immediate life updates
   useEffect(() => {
     let timer;
     if (!isTimerPaused) {
       timer = setInterval(() => {
         setTimeLeft((prevTime) => {
           if (prevTime <= 1 && !isReducingLife.current) {
-            console.log("Time's up! Current word:", currentWord?.original);
-
             isReducingLife.current = true;
-            // Play life down sound immediately
             if (isSoundOn && lives > 1) {
               lifeDownSoundRef.current
                 .play()
@@ -96,22 +94,36 @@ const PlayScreen = () => {
                   console.error("Error playing life down sound:", error)
                 );
             }
-
-            // Delay the life reduction to sync with sound
             setTimeout(() => {
               setLives((prevLives) => {
                 const newLives = prevLives - 1;
+
+                // Immediately update lives in localStorage
+                const currentPlayerId = localStorage.getItem("currentPlayerId");
+                const players = JSON.parse(
+                  localStorage.getItem("players") || "[]"
+                );
+                const playerIndex = players.findIndex(
+                  (p) => p.id === currentPlayerId
+                );
+                if (playerIndex !== -1 && Object.keys(userWords).length === 0) {
+                  players[playerIndex].gameProgress.currentLives = newLives;
+                  localStorage.setItem("players", JSON.stringify(players));
+                }
+
                 if (newLives > 0) {
                   setTimeout(() => {
                     startNewRound();
-                    setTimeLeft(4);
+                    setTimeLeft(30);
                     setGuess("");
                     isReducingLife.current = false;
                   }, 0);
                 } else {
+                  // Game Over handling
                   setIsTimerPaused(true);
                   isReducingLife.current = false;
-                  // Play game over sound only on last life
+                  handleGameOver();
+
                   if (isSoundOn) {
                     gameOverSoundRef.current
                       .play()
@@ -122,23 +134,44 @@ const PlayScreen = () => {
                 }
                 return newLives;
               });
-            }, 250); // Small delay before reducing life
-
+            }, 250);
             return 0;
           }
           return prevTime - 1;
         });
       }, 1000);
     }
-
     return () => {
       clearInterval(timer);
       isReducingLife.current = false;
     };
-  }, [isTimerPaused, currentWord, isSoundOn, lives]);
+  }, [isTimerPaused, currentWord, isSoundOn, lives, handleGameOver, userWords]);
 
-  // Updated renderHearts function with longer transition
+  // Update the initialization effect to run before render
+  useLayoutEffect(() => {
+    const currentPlayerId = localStorage.getItem("currentPlayerId");
+    if (currentPlayerId) {
+      const players = JSON.parse(localStorage.getItem("players") || "[]");
+      const player = players.find((p) => p.id === currentPlayerId);
+
+      if (player && Object.keys(userWords).length === 0) {
+        // Initialize lives from localStorage
+        if (player.gameProgress.currentLives !== undefined) {
+          setLives(player.gameProgress.currentLives);
+        }
+      }
+    }
+  }, []); // Empty dependency array means this runs once on mount
+
+  // Update renderHearts to ensure it uses the correct lives count
+  // Update renderHearts to ensure it uses the correct lives count
   const renderHearts = () => {
+    // Get current lives from localStorage to ensure accuracy
+    const currentPlayerId = localStorage.getItem("currentPlayerId");
+    const players = JSON.parse(localStorage.getItem("players") || "[]");
+    const player = players.find((p) => p.id === currentPlayerId);
+    const currentLives = player?.gameProgress?.currentLives ?? lives;
+
     return Array(3)
       .fill(null)
       .map((_, index) => (
@@ -146,40 +179,66 @@ const PlayScreen = () => {
           key={index}
           src={HeartIcon}
           alt="Heart"
-          className={`game-life-icon ${index >= lives ? "lost" : ""}`}
+          className={`game-life-icon ${index >= currentLives ? "lost" : ""}`}
           style={{
-            opacity: index >= lives ? 0.4 : 1,
-            transition: "opacity 0.4s ease 0.1s", // Added delay to transition
+            opacity: index >= currentLives ? 0.4 : 1,
+            transition: "opacity 0.4s ease 0.1s",
           }}
         />
       ));
   };
 
-  // Reset timer when starting new round
   useEffect(() => {
-    setTimeLeft(4);
+    setTimeLeft(30);
   }, [round]);
 
   const handleSubmit = () => {
     if (isSoundOn) playClickSound();
+
     if (submitGuess(guess)) {
       if (isSoundOn) playRandomCorrectSound();
       setGuess("");
 
-      // Trigger random celebration effect
+      // Store the found word in localStorage
+      const currentPlayerId = localStorage.getItem("currentPlayerId");
+      const players = JSON.parse(localStorage.getItem("players") || "[]");
+      const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
+
+      if (playerIndex !== -1) {
+        // Determine if it's a custom word or default word
+        const isCustomWord = Object.keys(userWords).length > 0;
+        const wordList = isCustomWord ? "custom_words" : "default_words";
+
+        // Initialize arrays if they don't exist
+        if (!players[playerIndex][wordList]) {
+          players[playerIndex][wordList] = [];
+        }
+
+        // Add the word if it's not already in the list
+        if (!players[playerIndex][wordList].includes(currentWord.original)) {
+          players[playerIndex][wordList].push(currentWord.original);
+          localStorage.setItem("players", JSON.stringify(players));
+        }
+      }
+
+      // Update lives in localStorage when submitting correct answer
+      if (playerIndex !== -1 && Object.keys(userWords).length === 0) {
+        players[playerIndex].gameProgress.currentLives = lives;
+        localStorage.setItem("players", JSON.stringify(players));
+      }
+
       const effects = ["confetti", "firework", "stars", "pride"];
       const randomEffect = effects[Math.floor(Math.random() * effects.length)];
       setCelebrationType(randomEffect);
       setIsCelebrating(true);
 
-      // Reset celebration after animation
       setTimeout(() => {
         setIsCelebrating(false);
         setCelebrationType(null);
       }, 3000);
 
       startNewRound();
-      setTimeLeft(4);
+      setTimeLeft(30);
     } else {
       if (isSoundOn) playRandomWrongSound();
       setIsInvalid(true);
@@ -318,7 +377,6 @@ const PlayScreen = () => {
     reader.readAsText(file);
   };
 
-  // Update the button text based on status
   const getButtonText = () => {
     switch (uploadStatus) {
       case "validating":
@@ -334,21 +392,31 @@ const PlayScreen = () => {
 
   const handleStartGame = () => {
     setShowStartButton(false);
-    setTimeLeft(4);
+    setTimeLeft(30);
     setScore(0);
-    setLives(3); // Reset lives to 3
-    setIsTimerPaused(false);
 
-    // Set round to infinite only when starting game with custom words
-    if (Object.keys(userWords).length > 0) {
-      setRound("∞");
-    } else {
-      setRound(1); // Reset to 1 for default word list
+    // Always reset lives and game state when starting custom words game
+    setLives(3);
+
+    // Update localStorage with reset game state
+    const currentPlayerId = localStorage.getItem("currentPlayerId");
+    const players = JSON.parse(localStorage.getItem("players") || "[]");
+    const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
+
+    if (playerIndex !== -1) {
+      players[playerIndex].gameProgress = {
+        ...players[playerIndex].gameProgress,
+        currentLives: 3,
+        currentScore: 0,
+        currentRound: Object.keys(userWords).length > 0 ? "∞" : 1,
+      };
+      localStorage.setItem("players", JSON.stringify(players));
     }
 
+    setIsTimerPaused(false);
+    setRound(Object.keys(userWords).length > 0 ? "∞" : 1);
     startNewRound();
 
-    // Re-enable the input when game starts
     const inputElement = document.querySelector('input[type="text"]');
     if (inputElement) {
       inputElement.disabled = false;
@@ -356,10 +424,11 @@ const PlayScreen = () => {
     }
   };
 
+  // Handle Play Again button click
   const handlePlayAgain = () => {
     if (isSoundOn) playClickSound();
     setLives(3);
-    setTimeLeft(4);
+    setTimeLeft(30);
     setGuess("");
     setIsTimerPaused(false);
     setUploadStatus("");
@@ -368,7 +437,6 @@ const PlayScreen = () => {
     setValidationStatus(null);
     setIsProcessing(false);
     resetGame();
-    // No immediate call to startNewRound()
   };
 
   // Add these animations inside PlayScreen component:
@@ -425,9 +493,15 @@ const PlayScreen = () => {
         localStorage.setItem("players", JSON.stringify(players));
       }
     };
-
-    // ... rest of your component logic
   }, []);
+
+  // Add new useEffect to watch round changes
+  useEffect(() => {
+    if (round !== "∞") {
+      // Only update for default game mode
+      updateRound(round);
+    }
+  }, [round, updateRound]);
 
   return (
     <PlayScreenWrapper className="flex flex-col min-h-screen bg-purple-700 select-none">
@@ -594,10 +668,7 @@ const PlayScreen = () => {
               {lives === 0 ? (
                 <button
                   className="mx-auto mt-6 text-lg text-white bg-green-700 rounded-full shadow-lg select-none play_again_btn sm:mt-8 md:mt-10 sm:text-xl md:text-2xl"
-                  onClick={() => {
-                    if (isSoundOn) playClickSound();
-                    handlePlayAgain();
-                  }}
+                  onClick={handlePlayAgain}
                   onMouseEnter={isSoundOn ? playHoverSound : null}
                 >
                   <span className="block inline-flex items-center px-6 py-3 w-full tracking-wider bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-full -translate-y-1 select-none play_again_btn_text sm:px-8 md:px-10 sm:py-4 hover:bg-gradient-to-tl active:-translate-y-0">
@@ -605,49 +676,37 @@ const PlayScreen = () => {
                     Play Again
                   </span>
                 </button>
-              ) : (
+              ) : uploadStatus !== "invalid" && !isProcessing ? (
                 <button
                   className={`mx-auto mt-6 text-lg text-white rounded-full shadow-lg select-none upload_btn sm:mt-8 md:mt-10 sm:text-xl md:text-2xl
-                    ${uploadStatus === "uploaded" ? "bg-green-700" : ""}
-                    ${
-                      uploadStatus === "invalid" ? "bg-red-500" : "bg-amber-700"
-                    }
-                    ${
-                      isProcessing || uploadStatus === "invalid"
-                        ? "cursor-not-allowed opacity-75"
-                        : ""
-                    }`}
-                  onMouseEnter={
-                    !isProcessing && uploadStatus !== "invalid" && isSoundOn
-                      ? playHoverSound
-                      : null
+            ${uploadStatus === "uploaded" ? "bg-green-700" : "bg-amber-700"}
+            ${isProcessing ? "cursor-not-allowed opacity-75" : ""}`}
+                  onMouseEnter={isSoundOn ? playHoverSound : null}
+                  onClick={() =>
+                    document.getElementById("upload-input").click()
                   }
-                  onClick={(e) => {
-                    if (isProcessing || uploadStatus === "invalid") {
-                      e.preventDefault();
-                      return;
-                    }
-                    document.getElementById("upload-input").click();
-                  }}
                 >
                   <span
                     className={`block inline-flex items-center px-6 py-3 w-full tracking-wider rounded-full -translate-y-1 select-none upload_btn_text sm:px-8 md:px-10 sm:py-4 
-                      ${
-                        !isProcessing
-                          ? "hover:bg-gradient-to-tl active:-translate-y-0"
-                          : ""
-                      }
-                      ${
-                        uploadStatus === "uploaded"
-                          ? "bg-gradient-to-br from-green-400 via-green-500 to-green-600"
-                          : ""
-                      }
-                      ${
-                        uploadStatus === "invalid"
-                          ? "bg-gradient-to-br from-red-400 via-red-500 to-red-600"
-                          : "bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600"
-                      }`}
+              hover:bg-gradient-to-tl active:-translate-y-0
+              ${
+                uploadStatus === "uploaded"
+                  ? "bg-gradient-to-br from-green-400 via-green-500 to-green-600"
+                  : isProcessing
+                  ? "bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600"
+                  : "bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600"
+              }`}
                   >
+                    <RiFileUploadFill className="mr-2 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+                    {getButtonText()}
+                  </span>
+                </button>
+              ) : (
+                <button
+                  className="mx-auto mt-6 text-lg text-white bg-amber-700 rounded-full shadow-lg opacity-75 cursor-not-allowed select-none upload_btn sm:mt-8 md:mt-10 sm:text-xl md:text-2xl"
+                  disabled
+                >
+                  <span className="block inline-flex items-center px-6 py-3 w-full tracking-wider bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 rounded-full -translate-y-1 select-none upload_btn_text sm:px-8 md:px-10 sm:py-4">
                     <RiFileUploadFill className="mr-2 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
                     {getButtonText()}
                   </span>
