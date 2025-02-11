@@ -95,27 +95,28 @@ const PlayScreen = () => {
                 );
             }
 
-            // Only store missed words for default game mode
-            if (Object.keys(userWords).length === 0) {
-              const currentPlayerId = localStorage.getItem("currentPlayerId");
-              const players = JSON.parse(
-                localStorage.getItem("players") || "[]"
-              );
-              const playerIndex = players.findIndex(
-                (p) => p.id === currentPlayerId
-              );
+            // Store the missed word immediately
+            const currentPlayerId = localStorage.getItem("currentPlayerId");
+            const players = JSON.parse(localStorage.getItem("players") || "[]");
+            const playerIndex = players.findIndex(
+              (p) => p.id === currentPlayerId
+            );
 
-              if (playerIndex !== -1 && currentWord) {
-                players[playerIndex].gameProgress = {
-                  ...players[playerIndex].gameProgress,
-                  wordsCompleted: [
-                    ...players[playerIndex].gameProgress.wordsCompleted,
-                    currentWord.original,
-                  ],
-                  currentLives: lives - 1,
-                };
-                localStorage.setItem("players", JSON.stringify(players));
-              }
+            if (
+              playerIndex !== -1 &&
+              Object.keys(userWords).length === 0 &&
+              currentWord
+            ) {
+              // Add the missed word to wordsCompleted array
+              players[playerIndex].gameProgress = {
+                ...players[playerIndex].gameProgress,
+                wordsCompleted: [
+                  ...players[playerIndex].gameProgress.wordsCompleted,
+                  currentWord.original,
+                ],
+                currentLives: lives - 1, // Update lives immediately
+              };
+              localStorage.setItem("players", JSON.stringify(players));
             }
 
             setTimeout(() => {
@@ -421,29 +422,26 @@ const PlayScreen = () => {
     setShowStartButton(false);
     setTimeLeft(12);
     setScore(0);
+
+    // Always reset lives and game state when starting custom words game
     setLives(3);
 
-    // Only update localStorage for default game mode
-    if (Object.keys(userWords).length === 0) {
-      const currentPlayerId = localStorage.getItem("currentPlayerId");
-      const players = JSON.parse(localStorage.getItem("players") || "[]");
-      const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
+    // Update localStorage with reset game state
+    const currentPlayerId = localStorage.getItem("currentPlayerId");
+    const players = JSON.parse(localStorage.getItem("players") || "[]");
+    const playerIndex = players.findIndex((p) => p.id === currentPlayerId);
 
-      if (playerIndex !== -1) {
-        players[playerIndex].gameProgress = {
-          ...players[playerIndex].gameProgress,
-          currentLives: 3,
-          currentScore: 0,
-          currentRound: 1,
-          currentCategory: 4,
-          wordsCompleted: [],
-        };
-        localStorage.setItem("players", JSON.stringify(players));
-      }
+    if (playerIndex !== -1) {
+      players[playerIndex].gameProgress = {
+        ...players[playerIndex].gameProgress,
+        currentLives: 3,
+        currentScore: 0,
+        currentRound: Object.keys(userWords).length > 0 ? "∞" : 1,
+      };
+      localStorage.setItem("players", JSON.stringify(players));
     }
 
     setIsTimerPaused(false);
-    // Set round to "∞" for custom words, but don't update localStorage
     setRound(Object.keys(userWords).length > 0 ? "∞" : 1);
     startNewRound();
 
