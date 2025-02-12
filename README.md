@@ -58,14 +58,13 @@ A fun and engaging word scramble game built with React, featuring both classic a
 ### Classic Mode
 
 - Progressive word length (4-10 letters)
-- Difficulty increases every 5 rounds
-- Score multipliers based on speed and word length
+- Difficulty increases every 1 rounds
+- Score multipliers based ON word length
 
 ### Custom Mode
 
 - Upload your own word list
 - Infinite rounds
-- Custom difficulty settings
 
 <br>
 
