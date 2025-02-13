@@ -75,7 +75,7 @@ const PlayScreen = () => {
   useEffect(() => {
     if (!currentWord) {
       startNewRound();
-      setTimeLeft(12);
+      setTimeLeft(60);
     }
   }, []);
 
@@ -126,7 +126,7 @@ const PlayScreen = () => {
                 if (newLives > 0) {
                   setTimeout(() => {
                     startNewRound();
-                    setTimeLeft(12);
+                    setTimeLeft(60);
                     setGuess("");
                     isReducingLife.current = false;
                   }, 0);
@@ -217,7 +217,7 @@ const PlayScreen = () => {
   };
 
   useEffect(() => {
-    setTimeLeft(12);
+    setTimeLeft(60);
   }, [round]);
 
   const handleSubmit = () => {
@@ -266,7 +266,7 @@ const PlayScreen = () => {
       }, 3000);
 
       startNewRound();
-      setTimeLeft(12);
+      setTimeLeft(60);
     } else {
       if (isSoundOn) playRandomWrongSound();
       setIsInvalid(true);
@@ -420,7 +420,7 @@ const PlayScreen = () => {
 
   const handleStartGame = () => {
     setShowStartButton(false);
-    setTimeLeft(12);
+    setTimeLeft(60);
     setScore(0);
 
     // Always reset lives and game state when starting custom words game
@@ -456,7 +456,7 @@ const PlayScreen = () => {
   const handlePlayAgain = () => {
     if (isSoundOn) playClickSound();
     setLives(3);
-    setTimeLeft(12);
+    setTimeLeft(60);
     setGuess("");
     setIsTimerPaused(false);
     setUploadStatus("");
