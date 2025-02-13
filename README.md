@@ -58,14 +58,13 @@ A fun and engaging word scramble game built with React, featuring both classic a
 ### Classic Mode
 
 - Progressive word length (4-10 letters)
-- Difficulty increases every 5 rounds
-- Score multipliers based on speed and word length
+- Difficulty increases every 1 rounds
+- Score multipliers based ON word length
 
 ### Custom Mode
 
 - Upload your own word list
 - Infinite rounds
-- Custom difficulty settings
 
 <br>
 
@@ -188,5 +187,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-Your Name - [GitHub](https://github.com/YourUsername) - your.email@example.com  
-Project Link: [https://github.com/YourUsername/word-scramble-game](https://github.com/YourUsername/word-scramble-game)
+Your Name - [GitHub](https://github.com/VinayShetyeOfficial) - vinay.shetye.personal@outlook.com <br>
+Project Link: [https://github.com/YourUsername/word-scramble-game](https://github.com/VinayShetyeOfficial/word-scramble-game)
