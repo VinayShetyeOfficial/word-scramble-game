@@ -184,5 +184,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-Your Name - [GitHub](https://github.com/VinayShetyeOfficial) - vinay.shetye.personal@outlook.com <br>
-Project Link: [https://github.com/YourUsername/word-scramble-game](https://github.com/VinayShetyeOfficial/word-scramble-game)
+Vinay Shetye - [GitHub](https://github.com/VinayShetyeOfficial) - vinay.shetye.personal@outlook.com <br>
+Project Link: [https://github.com/VinayShetyeOfficial/word-scramble-game](https://github.com/VinayShetyeOfficial/word-scramble-game)
